@@ -12,7 +12,7 @@ Start:
     adc10   0F1h
     adc10   0F5h
     adc10   0D5h
-    repe lock adc     ds:[bx+si],ah
+    adc     ds:[bx+si],ah
     adc     ds:[bx+si],ah
     adc     ds:[bx+si+11h],ah
     adc     ds:[bx+si+1111h],ah
