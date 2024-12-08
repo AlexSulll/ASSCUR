@@ -6,8 +6,8 @@ Start:
     adc10   macro op
     db      10h,op
     endm
-    adc10   0C0h;10op
-    adc10   0C8h
+    LOCK REPNZ adc10   0C0h;10op
+    REPNE adc10   0C8h
     adc10   0C1h
     adc10   0F1h
     adc10   0F5h

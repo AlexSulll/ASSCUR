@@ -1,13 +1,27 @@
 .model small
-.186
+.486
 .stack  100h
 .data
     buffer          db      1024 DUP(?)
     read_file       db      'COM.COM',0
     com_file        db      'result.asm',0
+    id_file         dw      ?
     Peremenaya_adc  db      'ADC',9,'$'
-    reg1            db      ' ,$'
-    reg2            db      ' $'
+    Peremenaya_bsf  db      'BSF',9,'$'
+    Peremenaya_movs db      'MOVS',9,'$'
+    reg1            db      ',$'
+    reg_e           db      ?
+    mem_e           db      ?
+    segm            dw      ?
+    segm_es         db      'ES:','$'
+    segm_cs         db      'CS:','$'
+    segm_ss         db      'SS:','$'
+    segm_ds         db      'DS:','$'
+    segm_fs         db      'FS:','$'
+    segm_gs         db      'GS:','$'
+    pref_LOCK       db      'LOCK',9,'$'
+    pref_REPNE      db      'REPNE/REPNZ',9,'$'
+    pref_REP        db      'REP/REPE/REPZ',9,'$'
     REG_AL          db      'AL$'
     REG_CL          db      'CL$'
     REG_DL          db      'DL$'
@@ -40,6 +54,14 @@
     EA_BP           db      'BP$'
     EA_BX           db      'BX$'
 .code
+check_seg   macro   op,seg
+    local   skip
+    cmp     al,op
+    jnz     skip
+    mov     segm,offset seg
+    jmp     prefix_oper
+    skip:
+endm
 Start:
     mov     ax,@data
     mov     ds,ax
@@ -48,7 +70,7 @@ Start:
     mov     dx,offset read_file
     mov     ax,3D02h
     int     21h
-    
+
     mov     bx,ax
     mov     ax,3F00h
     mov     cx,1024d
@@ -56,7 +78,6 @@ Start:
     int     21h
     
     mov     ax,3E00h
-    mov     bx,5
     int     21h
     
     mov     si,offset buffer
@@ -65,11 +86,12 @@ Start:
     mov     ax,3C00h
     mov     cx,2
     int     21h
+    mov     id_file,ax
     
-    jmp     nachalo
+    jmp     prefix_oper
 zapis:
     mov     ah,40h
-    mov     bx,5
+    mov     bx,id_file
     int     21h     
 
     mov     ah,09h
@@ -78,15 +100,57 @@ zapis:
 zapis_reg:
     mov     ah,40h
     mov     cx,2
-    mov     bx,5
+    mov     bx,id_file
     int     21h     
 
     mov     ah,09h
     int     21h
     ret
-nachalo:
-    mov     si,offset buffer
+prefix_oper:
     lodsb
+    cmp     al,66h
+    jnz     prefix_lock
+    mov     reg_e,1
+    jmp     prefix_oper
+prefix_lock:
+    cmp     al,0F0h
+    jnz     prefix_repne
+    mov     dx,offset pref_LOCK
+    mov     cx,5
+    call    zapis
+    jmp     prefix_oper
+prefix_repne:
+    cmp     al,0F2h
+    jnz     prefix_rep
+    mov     dx,offset pref_REPNE
+    mov     cx,12
+    call    zapis
+    jmp     prefix_oper
+prefix_rep:
+    cmp     al,0F3h
+    jnz     prefix_es
+    mov     dx,offset pref_REP
+    mov     cx,14
+    call    zapis
+    jmp     prefix_oper
+prefix_es:
+    check_seg   26h,segm_es
+prefix_cs:
+    check_seg   2Eh,segm_cs
+prefix_ss:
+    check_seg   36h,segm_es
+prefix_ds:
+    check_seg   3Eh,segm_ds
+prefix_fs:
+    check_seg   64h,segm_fs
+prefix_gs:
+    check_seg   65h,segm_gs
+prefix_address:
+    cmp     al,67h
+    jnz     nachalo
+    mov     mem_e,1
+    lodsb
+nachalo:
     cmp     al,10h
     jz      opc10
     jmp     Exit
