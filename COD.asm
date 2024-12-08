@@ -13,6 +13,11 @@
     reg_e           db      ?
     mem_e           db      ?
     segm            dw      ?
+    rm              db      ?
+    reg             db      ?
+    mode            db      ?
+    enterr          db      0Dh,0Ah,'$'
+    savesi          db      ?
     segm_es         db      'ES:','$'
     segm_cs         db      'CS:','$'
     segm_ss         db      'SS:','$'
@@ -22,6 +27,8 @@
     pref_LOCK       db      'LOCK',9,'$'
     pref_REPNE      db      'REPNE/REPNZ',9,'$'
     pref_REP        db      'REP/REPE/REPZ',9,'$'
+    
+    label bytereg
     REG_AL          db      'AL$'
     REG_CL          db      'CL$'
     REG_DL          db      'DL$'
@@ -30,7 +37,7 @@
     REG_CH          db      'CH$'
     REG_DH          db      'DH$'
     REG_BH          db      'BH$'
-    
+    label wordreg
     REG_AX          db      'AX$'
     REG_CX          db      'CX$'
     REG_DX          db      'DX$'
@@ -39,12 +46,7 @@
     REG_BP          db      'BP$'
     REG_SI          db      'SI$'
     REG_DI          db      'DI$'
-
-    REG_ES          db      'ES$'
-    REG_CS          db      'CS$'
-    REG_SS          db      'SS$'
-    REG_DS          db      'DS$'
-
+    label dwordreg
     EA_BX_SI        db      'BX + SI$'
     EA_BX_DI        db      'BX + DI$'
     EA_BP_SI        db      'BP + SI$'
@@ -53,6 +55,10 @@
     EA_DI           db      'DI$'
     EA_BP           db      'BP$'
     EA_BX           db      'BX$'
+    label registers
+    BYTE_REGS       DW      REG_AL, REG_CL, REG_DL, REG_BL, REG_AH, REG_CH, REG_DH, REG_BH
+    WORD_REGS       DW      REG_AX, REG_CX, REG_DX, REG_BX, REG_SP, REG_BP, REG_SI, REG_DI
+    SEG_REGS        DW      segm_es, segm_cs, segm_ss, segm_ds, segm_fs, segm_gs
 .code
 check_seg   macro   op,seg
     local   skip
@@ -108,6 +114,7 @@ zapis_reg:
     ret
 prefix_oper:
     lodsb
+    int 3
     cmp     al,66h
     jnz     prefix_lock
     mov     reg_e,1
@@ -135,15 +142,10 @@ prefix_rep:
     jmp     prefix_oper
 prefix_es:
     check_seg   26h,segm_es
-prefix_cs:
     check_seg   2Eh,segm_cs
-prefix_ss:
     check_seg   36h,segm_es
-prefix_ds:
     check_seg   3Eh,segm_ds
-prefix_fs:
     check_seg   64h,segm_fs
-prefix_gs:
     check_seg   65h,segm_gs
 prefix_address:
     cmp     al,67h
@@ -160,28 +162,85 @@ opc10:
     call    zapis
     
     lodsb
-    push    ax
-    and     al,0C0h
-    jnz     reg8reg8
+    cmp     reg_e,1
+    jz      e_reg
     
-reg8reg8:
-    pop     ax
-;    xor     bx,bx
-;    mov     cx,2
-;s1:
-;    sal     al,1
-;    rcl     bh,1
-;    loop    s1
-;    shr     al,2
-;    mov     cx,3
-;x1:
-;    shr     al,1
-;    rcr     bl,1
-;    loop    x1
-;    shr     bl,5
+    mov     bh,al
+    mov     bl,al
+    and     bh,0C0h
+    and     bl,38h
+    and     al,07h
+    shr     bl,3
+    shr     bh,6
+    mov     rm,al
+    mov     reg,bl
+    mov     mode,bh
+    cmp     mode,3
+    jz      regreg
+    cmp     mode,2
+    jz      mem_smesh16_reg
+    cmp     mode,1
+    jz      mem_smesh8_reg
+    jmp     mem_reg
+e_reg:
     
+mem_smesh16_reg:
+    
+mem_smesh8_reg:
+    
+mem_reg:
+    
+regreg:
+    int     3
+    push    si
+    movzx   si,rm
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    mov     dx,offset reg1
+    mov     cx,1
+    call    zapis
+    movzx   si,reg
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    lea     dx,enterr
+    mov     cx,2
+    call    zapis
+    pop     si
+    jmp     prefix_oper
 Exit:
     mov     ax,4C00h
     int     21h
     end     Start 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     

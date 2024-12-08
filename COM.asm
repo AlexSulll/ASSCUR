@@ -7,7 +7,7 @@ Start:
     db      10h,op
     endm
     LOCK REPNZ adc10   0C0h;10op
-    REPNE adc10   0C8h
+    REP adc10   0C8h
     adc10   0C1h
     adc10   0F1h
     adc10   0F5h
