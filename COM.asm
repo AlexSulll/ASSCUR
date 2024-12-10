@@ -12,10 +12,14 @@ Start:
     adc10   0F1h
     adc10   0F5h
     adc10   0D5h
-    adc     ds:[bx+si],ah
-    adc     ds:[bx+si],ah
-    adc     ds:[bx+si+11h],ah
-    adc     ds:[bx+si+1111h],ah
+    adc     ds:[1111h],ah
+    adc     gs:[bx+si],ah
+    adc     fs:[bx+si],ah
+    adc     fs:[bx+si+11h],ah
+    adc     fs:[bx+si+1111h],ah
+    adc     fs:[1111h],ah
+    adc     fs:[bp+00h],ah
+    
     
     adc11   macro op;macros 11h + oper
     db      11h,op
