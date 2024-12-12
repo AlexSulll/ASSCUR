@@ -21,10 +21,10 @@ Start:
     adc     fs:[bp],ah;mem_8_regb
     adc     es:[bp+98h],al;mem_16_regb
     adc     gs:[eax],al
-    adc     ss:[ebp],al
+    adc     ss:[ebp],al;fix
     adc     fs:[eax+12345768h],al
-    adc     fs:[eax+ebx+12345768h],al
-    adc     ss:[eax+ebx],al
+    adc     fs:[eax+ebx+12345768h],al ;todo dv_sib_disp32
+    adc     ss:[eax+ebx],al ;todo
     
     adc11   macro op;macros 11h + oper
     db      11h,op

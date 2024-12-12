@@ -4,4 +4,6 @@
  00000H 00353H 00354H _TEXT              CODE
  00354H 00354H 00000H _DATA              DATA
 
+Program entry point at 0000:0100
+Warning: No stack
 

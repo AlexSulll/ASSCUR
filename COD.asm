@@ -17,6 +17,7 @@
     e               db      'E','$'
     h               db      'h','$'
     plus            db      ' + ','$'
+    none            db      'none','$'
     
     sib             db      ?
     sssib           db      ?
@@ -74,6 +75,31 @@
     REG_ESI         db      'ESI$'
     REG_EDI         db      'EDI$'
     
+    REG_EAX_2       db      'EAX*2$'
+    REG_ECX_2       db      'ECX*2$'
+    REG_EDX_2       db      'EDX*2$'
+    REG_EBX_2       db      'EBX*2$'
+    REG_EBP_2       db      'EBP*2$'
+    REG_ESI_2       db      'ESI*2$'
+    REG_EDI_2       db      'EDI*2$'
+    
+    REG_EAX_4       db      'EAX*4$'
+    REG_ECX_4       db      'ECX*4$'
+    REG_EDX_4       db      'EDX*4$'
+    REG_EBX_4       db      'EBX*4$'
+    REG_EBP_4       db      'EBP*4$'
+    REG_ESI_4       db      'ESI*4$'
+    REG_EDI_4       db      'EDI*4$'
+    
+    REG_EAX_8       db      'EAX*8$'
+    REG_ECX_8       db      'ECX*8$'
+    REG_EDX_8       db      'EDX*8$'
+    REG_EBX_8       db      'EBX*8$'
+    REG_EBP_8       db      'EBP*8$'
+    REG_ESI_8       db      'ESI*8$'
+    REG_EDI_8       db      'EDI*8$'
+    
+    
     EA_BX_SI        db      'BX + SI$'
     EA_BX_DI        db      'BX + DI$'
     EA_BP_SI        db      'BP + SI$'
@@ -93,6 +119,18 @@
     
     label type_ovr_ptrs
     PTRS            dw      BYTE_PTR, WORD_PTR, DWORD_PTR
+    
+    label ss00_sib
+    SCALED_INDEX00  dw      REG_EAX, REG_ECX, REG_EDX, REG_EBX, none, REG_EBP, REG_ESI, REG_EDI
+    
+    label ss01_sib
+    SCALED_INDEX01  dw      REG_EAX_2, REG_ECX_2, REG_EDX_2, REG_EBX_2, none, REG_EBP_2, REG_ESI_2, REG_EDI_2
+    
+    label ss10_sib
+    SCALED_INDEX10  dw      REG_EAX_4, REG_ECX_4, REG_EDX_4, REG_EBX_4, none, REG_EBP_4, REG_ESI_4, REG_EDI_4
+    
+    label ss11_sib
+    SCALED_INDEX11  dw      REG_EAX_8, REG_ECX_8, REG_EDX_8, REG_EBX_8, none, REG_EBP_8, REG_ESI_8, REG_EDI_8
 .code
 check_seg   macro   op,seg
     local   skip
@@ -119,7 +157,27 @@ del_na_modrm    macro
     mov     rm,al
     mov     reg,bl
     mov     mode,bh
-endm 
+endm
+del_na_sib    macro
+    lodsb
+    mov     bh,al
+    mov     bl,al
+    and     bh,0C0h
+    and     bl,38h
+    and     al,07h
+    shr     bl,3
+    shr     bh,6
+    mov     base,al
+    mov     index,bl
+    mov     sssib,bh
+endm
+zap_disp    macro
+    lodsb
+    call    razdelenie
+    mov     disp,ax
+    zap     disp,2
+    sub     si,2
+endm
 Start:
     mov     ax,@data
     mov     ds,ax
@@ -266,7 +324,7 @@ zapis_dmem_32_regb:
     pop     si
     dec     si
     lodsb
-    push    ax
+    push    ax ;ax = modrm
     and     al,00001111b
     cmp     al,04h
     jz      dv_sib_disp32
@@ -284,26 +342,11 @@ zapis_dmem_32_regb:
     zap     plus,3
     pop     si
     add     si,3
-    lodsb
-    call    razdelenie
-    mov     disp,ax
-    zap     disp,2
-    sub     si,2
-    lodsb   
-    call    razdelenie
-    mov     disp,ax
-    zap     disp,2
-    sub     si,2
-    lodsb   
-    call    razdelenie
-    mov     disp,ax
-    zap     disp,2
-    sub     si,2
-    lodsb   
-    call    razdelenie
-    mov     disp,ax
-    zap     disp,2
-    add     si,2
+    zap_disp
+    zap_disp
+    zap_disp
+    zap_disp
+    add     si,5
     push    si
     zap     h,1
     zap     right_par,1
@@ -317,8 +360,55 @@ zapis_dmem_32_regb:
     pop     si
     jmp     prefix_oper
 dv_sib_disp32:
-    
+    del_na_sib
+    push    si
+    movzx   si,sssib
+    cmp     si,1
+    jz      zapis_sib01
+    cmp     si,2
+    jz      zapis_sib10
+    cmp     si,3
+    jz      zapis_sib11
+    movzx   si,base
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    int     3
+    zap_disp
+    zap_disp
+    zap_disp
+    zap_disp
+    add     si,5
+    push    si
+    zap     h,1
+    zap     right_par,1
+    zap     reg1,1
+    movzx   si,reg
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     enterr,2
+    pop     si
     jmp     Exit
+    jmp     prefix_oper
+zapis_sib01:
+ 
+zapis_sib10:
+ 
+zapis_sib11:
+    
 mem_16_regb_no_segm:
     movzx   si,rm
     cmp     si,2
