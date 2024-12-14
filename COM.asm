@@ -19,11 +19,14 @@ Start:
     adc     fs:[bx+si+9876h],ah;mem_16_regb
     adc     fs:[1111h],ah
     adc     fs:[bp],ah;mem_8_regb
+    adc     fs:[bx+31h],ah
     adc     es:[bp+98h],al;mem_16_regb
-    adc     gs:[eax],al
-    adc     ss:[ebp],al;fix
+    adc     ds:[eax],al
+    adc     ss:[ebp],al
+    adc     gs:[12345768h],al ;todo
     adc     fs:[eax+12345768h],al
-    adc     fs:[eax+ebx+12345768h],al ;todo dv_sib_disp32
+    adc     fs:[eax+ebx*8+12345768h],al
+    adc     fs:[eax+ebx+12345768h],al ;dv_sib_disp32
     adc     ss:[eax+ebx],al ;todo
     
     adc11   macro op;macros 11h + oper
@@ -63,7 +66,7 @@ Start:
     adc     es:[eax+1111h],eax;rmem_8_reg
     adc     fs:[ebx+esi],eax;TODO sib bayit mod=00
     adc     fs:[ebx+esi],ax;
-    adc     es:[ebx+esi+11h],eax;
+    adc     ds:[ebx+esi+11h],eax;
     adc     gs:[ebx+esi+1111h],eax;
     adc     ss:[ebx+esi+11111111h],eax;
     
