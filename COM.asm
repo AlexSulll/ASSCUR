@@ -81,6 +81,7 @@ Start:
     adc     ch,ds:[bx+si]
     adc     ch,ds:[bx+si+11h]
     adc     ch,ds:[bx+si+1111h]
+    adc     bh,ds:[ebx+esi+11h]
     
     adc     ax,ax;13op
     adc     cx,dx
