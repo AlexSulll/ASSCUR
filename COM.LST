@@ -1,5 +1,5 @@
-Turbo Assembler	 Version 4.1	    12/04/24 13:12:53	    Page 1
-COM.asm
+Turbo Assembler	 Version 4.1	    12/15/24 12:42:42	    Page 1
+com.ASM
 
 
 
@@ -11,189 +11,220 @@ COM.asm
       6					     adc10   macro op
       7					     db	     10h,op
       8					     endm
-      9					     adc10   0C0h;10op
-1    10	    0100  10 C0			     db	     10h,0C0h
-     11					     adc10   0C8h
-1    12	    0102  10 C8			     db	     10h,0C8h
+      9	    0100  F0> F2>		     LOCK REPNZ	adc10	0C0h;10op
+1    10	    0102  10 C0			     db	     10h,0C0h
+     11	    0104  F3>			     REP adc10	 0C8h
+1    12	    0105  10 C8			     db	     10h,0C8h
      13					     adc10   0C1h
-1    14	    0104  10 C1			     db	     10h,0C1h
+1    14	    0107  10 C1			     db	     10h,0C1h
      15					     adc10   0F1h
-1    16	    0106  10 F1			     db	     10h,0F1h
+1    16	    0109  10 F1			     db	     10h,0F1h
      17					     adc10   0F5h
-1    18	    0108  10 F5			     db	     10h,0F5h
+1    18	    010B  10 F5			     db	     10h,0F5h
      19					     adc10   0D5h
-1    20	    010A  10 D5			     db	     10h,0D5h
-     21	    010C  10 20			     adc     ds:[bx+si],ah
-     22	    010E  10 60	11		     adc     ds:[bx+si+11h],ah
-     23	    0111  10 A0	1111		     adc     ds:[bx+si+1111h],ah
-     24
-     25					     adc11   macro op;macros 11h + oper
-     26					     db	     11h,op
-     27					     endm
-     28					     adc11   0C0h;11op
-1    29	    0115  11 C0			     db	     11h,0C0h
-     30					     adc11   0C8h
-1    31	    0117  11 C8			     db	     11h,0C8h
-     32					     adc11   0C1h
-1    33	    0119  11 C1			     db	     11h,0C1h
-     34					     adc11   0D1h
-1    35	    011B  11 D1			     db	     11h,0D1h
-     36					     adc11   0D9h
-1    37	    011D  11 D9			     db	     11h,0D9h
-     38
-     39					     adce11  macro op ;macro 66h + adc11 = 66h+11h+oper
-     40					     db	     66h
-     41					     adc11   op
-     42					     endm
-     43					     adce11  0C0h
-1    44	    011F  66			     db	     66h
-1    45					     adc11   0C0h
-2    46	    0120  11 C0			     db	     11h,0C0h
-     47					     adce11  0C8h
-1    48	    0122  66			     db	     66h
-1    49					     adc11   0C8h
-2    50	    0123  11 C8			     db	     11h,0C8h
-     51					     adce11  0C1h
-1    52	    0125  66			     db	     66h
-1    53					     adc11   0C1h
-2    54	    0126  11 C1			     db	     11h,0C1h
-     55					     adce11  0D1h
-1    56	    0128  66			     db	     66h
-1    57					     adc11   0D1h
-Turbo Assembler	 Version 4.1	    12/04/24 13:12:53	    Page 2
-COM.asm
+1    20	    010D  10 D5			     db	     10h,0D5h
+     21	    010F  67| 10 AD 12345768	     adc     [ebp+12345768h],ch
+     22	    0116  10 26	5643		     adc     ds:[5643h],ah
+     23	    011A  65: 10 20		     adc     gs:[bx+si],ah
+     24	    011D  64: 10 20		     adc     fs:[bx+si],ah
+     25	    0120  64: 10 60 11		     adc     fs:[bx+si+11h],ah;mem_8_regb
+     26	    0124  64: 10 A0 9876	     adc     fs:[bx+si+9876h],ah;mem_16_regb
+     27	    0129  64: 10 26 1111	     adc     fs:[1111h],ah
+     28	    012E  64: 10 66 00		     adc     fs:[bp],ah;mem_8_regb
+     29	    0132  64: 10 67 31		     adc     fs:[bx+31h],ah
+     30	    0136  26: 10 86 0098	     adc     es:[bp+98h],al;mem_16_regb
+     31	    013B  67| 10 00		     adc     ds:[eax],al
+     32	    013E  67| 10 45 00		     adc     ss:[ebp],al
+     33					     ;adc     gs:[12345768h],al	;todo
+     34	    0142  64: 67| 10 80	      +	     adc     fs:[eax+12345768h],al ;fix	segm
+     35		  12345768
+     36	    014A  64: 67| 10 84	D8    +	     adc     fs:[eax+ebx*8+12345768h],al
+     37		  12345768
+     38	    0153  64: 67| 10 84	18    +	     adc     fs:[eax+ebx+12345768h],al ;dv_sib_disp32
+     39		  12345768
+     40	    015C  36: 67| 10 04	18	     adc     ss:[eax+ebx],al ;todo
+     41
+     42					     adc11   macro op;macros 11h + oper
+     43					     db	     11h,op
+     44					     endm
+     45					     adc11   0C0h;11op
+1    46	    0161  11 C0			     db	     11h,0C0h
+     47					     adc11   0C8h;regvregv
+1    48	    0163  11 C8			     db	     11h,0C8h
+     49					     adc11   0C1h;regvregv
+1    50	    0165  11 C1			     db	     11h,0C1h
+     51					     adc11   0D1h;regvregv
+1    52	    0167  11 D1			     db	     11h,0D1h
+     53					     adc11   0D9h;regvregv
+1    54	    0169  11 D9			     db	     11h,0D9h
+     55
+     56					     adce11  macro op ;macro 66h + adc11 = 66h+11h+oper
+     57					     db	     66h
+Turbo Assembler	 Version 4.1	    12/15/24 12:42:42	    Page 2
+com.ASM
 
 
 
-2    58	    0129  11 D1			     db	     11h,0D1h
-     59					     adce11  0D9h
-1    60	    012B  66			     db	     66h
-1    61					     adc11   0D9h
-2    62	    012C  11 D9			     db	     11h,0D9h
-     63	    012E  11 00			     adc     ds:[bx+si],ax
-     64	    0130  26: 11 00		     adc     es:[bx+si],ax
-     65	    0133  11 40	11		     adc     ds:[bx+si+11h],ax
-     66	    0136  11 80	1111		     adc     ds:[bx+si+1111h],ax
-     67	    013A  66| 64: 67| 11 04 33	     adc     fs:[ebx+esi],eax
-     68	    0140  66| 26: 67| 11 44 33+	     adc     es:[ebx+esi+11h],eax
-     69		  11
-     70	    0147  66| 65: 67| 11 84 33+	     adc     gs:[ebx+esi+1111h],eax
-     71		  00001111
-     72	    0151  66| 36: 67| 11 84 33+	     adc     ss:[ebx+esi+11111111h],eax
-     73		  11111111
-     74
-     75	    015B  12 E1			     adc     ah,cl;12 op
-     76	    015D  12 C6			     adc     al,dh
-     77	    015F  12 D5			     adc     dl,ch
-     78	    0161  12 28			     adc     ch,ds:[bx+si]
-     79	    0163  12 68	11		     adc     ch,ds:[bx+si+11h]
-     80	    0166  12 A8	1111		     adc     ch,ds:[bx+si+1111h]
-     81
-     82	    016A  13 C0			     adc     ax,ax;13op
-     83	    016C  13 CA			     adc     cx,dx
-     84	    016E  13 C8			     adc     cx,ax
-     85	    0170  13 C1			     adc     ax,cx
-     86	    0172  26: 13 00		     adc     ax,es:[bx+si]
-     87	    0175  26: 13 40 11		     adc     ax,es:[bx+si+11h]
-     88	    0179  26: 13 80 1111	     adc     ax,es:[bx+si+1111h]
-     89	    017E  66| 26: 67| 13 04 33	     adc     eax,es:[ebx+esi]
-     90	    0184  66| 64: 67| 13 4C 33+	     adc     ecx,fs:[ebx+esi+11h]
-     91		  11
-     92	    018B  66| 65: 67| 13 94 33+	     adc     edx,gs:[ebx+esi+1111h]
-     93		  00001111
-     94	    0195  66| 2E: 67| 13 9C 33+	     adc     ebx,cs:[ebx+esi+11111111h]
-     95		  11111111
-     96
-     97	    019F  14 11			     adc     al,11h;14op
-     98
-     99	    01A1  15 1111		     adc     ax,1111h;15op
-    100	    01A4  66| 15 11111111	     adc     eax,11111111h
-    101
-    102	    01AA  80 D1	11		     adc     cl,11h;80op
-    103	    01AD  80 D2	11		     adc     dl,11h
-    104	    01B0  80 D3	11		     adc     bl,11h
-    105	    01B3  80 D4	11		     adc     ah,11h
-    106	    01B6  80 D5	11		     adc     ch,11h
-    107	    01B9  80 D6	11		     adc     dh,11h
-    108	    01BC  80 D7	11		     adc     bh,11h
-    109	    01BF  80 10	11		     adc     byte ptr ds:[bx+si],11h
-    110	    01C2  64: 80 50 11 11	     adc     byte ptr fs:[bx+si+11h],11h
-    111	    01C7  26: 80 90 1111 11	     adc     byte ptr es:[bx+si+1111h],11h
-    112
-    113	    01CD  81 D1	1111		     adc     cx,1111h;81op
-    114	    01D1  81 D2	1111		     adc     dx,1111h
-Turbo Assembler	 Version 4.1	    12/04/24 13:12:53	    Page 3
-COM.asm
+     58					     adc11   op
+     59					     endm
+     60					     adce11  0C0h;regdvregdv
+1    61	    016B  66			     db	     66h
+1    62					     adc11   0C0h
+2    63	    016C  11 C0			     db	     11h,0C0h
+     64					     adce11  0C8h;regdvregdv
+1    65	    016E  66			     db	     66h
+1    66					     adc11   0C8h
+2    67	    016F  11 C8			     db	     11h,0C8h
+     68					     adce11  0C1h;regdvregdv
+1    69	    0171  66			     db	     66h
+1    70					     adc11   0C1h
+2    71	    0172  11 C1			     db	     11h,0C1h
+     72					     adce11  0D1h;regdvregdv
+1    73	    0174  66			     db	     66h
+1    74					     adc11   0D1h
+2    75	    0175  11 D1			     db	     11h,0D1h
+     76					     adce11  0D9h;regdvregdv
+1    77	    0177  66			     db	     66h
+1    78					     adc11   0D9h
+2    79	    0178  11 D9			     db	     11h,0D9h
+     80	    017A  65: 11 06 5641	     adc     gs:[5641h],ax;mem_regv
+     81	    017F  64: 11 3E 1234	     adc     fs:[1234h],di;mem_regv
+     82	    0184  11 00			     adc     ds:[bx+si],ax;mem_regv
+     83	    0186  26: 11 00		     adc     es:[bx+si],ax;mem_regv
+     84	    0189  11 40	11		     adc     ds:[bx+si+11h],ax;mem_8_regv
+     85	    018C  36: 11 7D 11		     adc     ss:[di+11h],di;mem_8_regv
+     86	    0190  11 80	1111		     adc     ds:[bx+si+1111h],ax;mem_16_regv
+     87					     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+     88	    0194  66| 2E: 67| 11 00	     adc     cs:[eax],eax;rmem_reg
+     89	    0199  64: 67| 11 00		     adc     fs:[eax],ax;rmem_reg
+     90	    019D  26: 67| 11 00		     adc     es:[eax],ax;rmem_reg
+     91	    01A1  36: 67| 11 40	11	     adc     ss:[eax+11h],ax;rmem_8_reg
+     92	    01A6  36: 67| 10 40	11	     adc     ss:[eax+11h],al;rmem_8_reg
+     93	    01AB  66| 36: 67| 11 40 11	     adc     ss:[eax+11h],eax;rmem_8_reg
+     94	    01B1  64: 67| 11 80	      +	     adc     fs:[eax+5684h],ax;rmem_8_reg
+     95		  00005684
+     96	    01B9  65: 67| 10 80	      +	     adc     gs:[eax+1111h],al;rmem_8_reg
+     97		  00001111
+     98	    01C1  66| 26: 67| 11 80   +	     adc     es:[eax+1111h],eax;rmem_8_reg
+     99		  00001111
+    100	    01CA  66| 64: 67| 11 04 33	     adc     fs:[ebx+esi],eax;TODO sib bayit mod=00
+    101	    01D0  64: 67| 11 04	33	     adc     fs:[ebx+esi],ax;
+    102	    01D5  66| 67| 11 44	33 11	     adc     ds:[ebx+esi+11h],eax;
+    103	    01DB  66| 65: 67| 11 84 33+	     adc     gs:[ebx+esi+1111h],eax;
+    104		  00001111
+    105	    01E5  66| 36: 67| 11 84 33+	     adc     ss:[ebx+esi+11111111h],eax;
+    106		  11111111
+    107
+    108	    01EF  12 E1			     adc     ah,cl;12 op
+    109	    01F1  12 C6			     adc     al,dh
+    110	    01F3  12 D5			     adc     dl,ch
+    111	    01F5  12 28			     adc     ch,ds:[bx+si]
+    112	    01F7  12 68	11		     adc     ch,ds:[bx+si+11h]
+    113	    01FA  12 A8	1111		     adc     ch,ds:[bx+si+1111h]
+    114
+Turbo Assembler	 Version 4.1	    12/15/24 12:42:42	    Page 3
+com.ASM
 
 
 
-    115	    01D5  81 D3	1111		     adc     bx,1111h
-    116	    01D9  81 D4	1111		     adc     sp,1111h
-    117	    01DD  81 D5	1111		     adc     bp,1111h
-    118	    01E1  81 D6	1111		     adc     si,1111h
-    119	    01E5  81 D7	1111		     adc     di,1111h
-    120	    01E9  81 10	1111		     adc     word ptr ds:[bx+si],1111h
-    121	    01ED  64: 81 50 11 1111	     adc     word ptr fs:[bx+si+11h],1111h
-    122	    01F3  26: 81 90 1111 1111	     adc     word ptr es:[bx+si+1111h],1111h
-    123	    01FA  67| 81 14 33 1111	     adc     word ptr ds:[ebx+esi],1111h
-    124	    0200  64: 67| 81 54	33 11 +	     adc     word ptr fs:[ebx+esi+11h],1111h
-    125		  1111
-    126	    0208  26: 67| 81 94	33    +	     adc     word ptr es:[ebx+esi+1111h],1111h
-    127		  00001111 1111
-    128	    0213  66| 65: 81 10	      +	     adc     dword ptr gs:[bx+si],1111h
-    129		  00001111
-    130	    021B  66| 64: 81 50	11    +	     adc     dword ptr fs:[bx+si+11h],11111111h
-    131		  11111111
-    132	    0224  66| 81 90 1111      +	     adc     dword ptr ds:[bx+si+1111h],11116543h
-    133		  11116543
-    134	    022D  66| 65: 67| 81 14 33+	     adc     dword ptr gs:[ebx+esi],1111h
-    135		  00001111
-    136	    0237  66| 64: 67| 81 54 33+	     adc     dword ptr fs:[ebx+esi+11h],11111111h
-    137		  11 11111111
-    138	    0242  66| 67| 81 94	33    +	     adc     dword ptr ds:[ebx+esi+1111h],11116543h
-    139		  00001111 11116543
-    140
-    141					     ;82 est' li on?
-    142
-    143	    024F  83 D1	11		     adc     cx,11h;83op
-    144	    0252  83 D2	11		     adc     dx,11h
-    145	    0255  83 D3	11		     adc     bx,11h
-    146	    0258  83 D4	11		     adc     sp,11h
-    147	    025B  83 D5	11		     adc     bp,11h
-    148	    025E  83 D6	11		     adc     si,11h
-    149	    0261  83 D7	11		     adc     di,11h
-    150	    0264  66| 83 D0 11		     adc     eax,11h
-    151	    0268  66| 83 D1 11		     adc     ecx,11h
-    152	    026C  66| 83 D2 11		     adc     edx,11h
-    153	    0270  66| 83 D3 11		     adc     ebx,11h
-    154	    0274  66| 83 D4 11		     adc     esp,11h
-    155	    0278  66| 83 D5 11		     adc     ebp,11h
-    156	    027C  66| 83 D6 11		     adc     esi,11h
-    157	    0280  66| 83 D7 11		     adc     edi,11h
-    158	    0284  83 10	11		     adc     word ptr ds:[bx+si],11h
-    159	    0287  64: 83 50 11 11	     adc     word ptr fs:[bx+si+11h],11h
-    160	    028C  26: 83 90 1111 11	     adc     word ptr es:[bx+si+1111h],11h
-    161	    0292  67| 83 14 33 11	     adc     word ptr ds:[ebx+esi],11h
-    162	    0297  64: 67| 83 54	33 11 +	     adc     word ptr fs:[ebx+esi+11h],11h
-    163		  11
-    164	    029E  26: 67| 83 94	33    +	     adc     word ptr es:[ebx+esi+1111h],11h
-    165		  00001111 11
-    166	    02A8  66| 65: 83 10	11	     adc     dword ptr gs:[bx+si],11h
-    167	    02AD  66| 64: 83 50	11 11	     adc     dword ptr fs:[bx+si+11h],11h
-    168	    02B3  66| 83 90 1111 11	     adc     dword ptr ds:[bx+si+1111h],11h
-    169	    02B9  66| 65: 67| 83 14 33+	     adc     dword ptr gs:[ebx+esi],11h
-    170		  11
-    171	    02C0  66| 64: 67| 83 54 33+	     adc     dword ptr fs:[ebx+esi+11h],11h
-Turbo Assembler	 Version 4.1	    12/04/24 13:12:53	    Page 4
-COM.asm
+    115	    01FE  13 C0			     adc     ax,ax;13op
+    116	    0200  13 CA			     adc     cx,dx
+    117	    0202  13 C8			     adc     cx,ax
+    118	    0204  13 C1			     adc     ax,cx
+    119	    0206  26: 13 00		     adc     ax,es:[bx+si]
+    120	    0209  26: 13 40 11		     adc     ax,es:[bx+si+11h]
+    121	    020D  26: 13 80 1111	     adc     ax,es:[bx+si+1111h]
+    122	    0212  66| 26: 67| 13 04 33	     adc     eax,es:[ebx+esi]
+    123	    0218  66| 64: 67| 13 4C 33+	     adc     ecx,fs:[ebx+esi+11h]
+    124		  11
+    125	    021F  66| 65: 67| 13 94 33+	     adc     edx,gs:[ebx+esi+1111h]
+    126		  00001111
+    127	    0229  66| 2E: 67| 13 9C 33+	     adc     ebx,cs:[ebx+esi+11111111h]
+    128		  11111111
+    129
+    130	    0233  14 11			     adc     al,11h;14op
+    131
+    132	    0235  15 1111		     adc     ax,1111h;15op
+    133	    0238  66| 15 11111111	     adc     eax,11111111h
+    134
+    135	    023E  80 D1	11		     adc     cl,11h;80op
+    136	    0241  80 D2	11		     adc     dl,11h
+    137	    0244  80 D3	11		     adc     bl,11h
+    138	    0247  80 D4	11		     adc     ah,11h
+    139	    024A  80 D5	11		     adc     ch,11h
+    140	    024D  80 D6	11		     adc     dh,11h
+    141	    0250  80 D7	11		     adc     bh,11h
+    142	    0253  80 10	11		     adc     byte ptr ds:[bx+si],11h
+    143	    0256  64: 80 50 11 11	     adc     byte ptr fs:[bx+si+11h],11h
+    144	    025B  26: 80 90 1111 11	     adc     byte ptr es:[bx+si+1111h],11h
+    145
+    146	    0261  81 D1	1111		     adc     cx,1111h;81op
+    147	    0265  81 D2	1111		     adc     dx,1111h
+    148	    0269  81 D3	1111		     adc     bx,1111h
+    149	    026D  81 D4	1111		     adc     sp,1111h
+    150	    0271  81 D5	1111		     adc     bp,1111h
+    151	    0275  81 D6	1111		     adc     si,1111h
+    152	    0279  81 D7	1111		     adc     di,1111h
+    153	    027D  81 10	1111		     adc     word ptr ds:[bx+si],1111h
+    154	    0281  64: 81 50 11 1111	     adc     word ptr fs:[bx+si+11h],1111h
+    155	    0287  26: 81 90 1111 1111	     adc     word ptr es:[bx+si+1111h],1111h
+    156	    028E  67| 81 14 33 1111	     adc     word ptr ds:[ebx+esi],1111h
+    157	    0294  64: 67| 81 54	33 11 +	     adc     word ptr fs:[ebx+esi+11h],1111h
+    158		  1111
+    159	    029C  26: 67| 81 94	33    +	     adc     word ptr es:[ebx+esi+1111h],1111h
+    160		  00001111 1111
+    161	    02A7  66| 65: 81 10	      +	     adc     dword ptr gs:[bx+si],1111h
+    162		  00001111
+    163	    02AF  66| 64: 81 50	11    +	     adc     dword ptr fs:[bx+si+11h],11111111h
+    164		  11111111
+    165	    02B8  66| 81 90 1111      +	     adc     dword ptr ds:[bx+si+1111h],11116543h
+    166		  11116543
+    167	    02C1  66| 65: 67| 81 14 33+	     adc     dword ptr gs:[ebx+esi],1111h
+    168		  00001111
+    169	    02CB  66| 64: 67| 81 54 33+	     adc     dword ptr fs:[ebx+esi+11h],11111111h
+    170		  11 11111111
+    171	    02D6  66| 67| 81 94	33    +	     adc     dword ptr ds:[ebx+esi+1111h],11116543h
+Turbo Assembler	 Version 4.1	    12/15/24 12:42:42	    Page 4
+com.ASM
 
 
 
-    172		  11 11
-    173	    02C8  66| 67| 83 94	33    +	     adc     dword ptr ds:[ebx+esi+1111h],11h
-    174		  00001111 11
-    175					     end     Start
-Turbo Assembler	 Version 4.1	    12/04/24 13:12:53	    Page 5
+    172		  00001111 11116543
+    173
+    174	    02E3  83 D1	11		     adc     cx,11h;83op
+    175	    02E6  83 D2	11		     adc     dx,11h
+    176	    02E9  83 D3	11		     adc     bx,11h
+    177	    02EC  83 D4	11		     adc     sp,11h
+    178	    02EF  83 D5	11		     adc     bp,11h
+    179	    02F2  83 D6	11		     adc     si,11h
+    180	    02F5  83 D7	11		     adc     di,11h
+    181	    02F8  66| 83 D0 11		     adc     eax,11h
+    182	    02FC  66| 83 D1 11		     adc     ecx,11h
+    183	    0300  66| 83 D2 11		     adc     edx,11h
+    184	    0304  66| 83 D3 11		     adc     ebx,11h
+    185	    0308  66| 83 D4 11		     adc     esp,11h
+    186	    030C  66| 83 D5 11		     adc     ebp,11h
+    187	    0310  66| 83 D6 11		     adc     esi,11h
+    188	    0314  66| 83 D7 11		     adc     edi,11h
+    189	    0318  83 10	11		     adc     word ptr ds:[bx+si],11h
+    190	    031B  64: 83 50 11 11	     adc     word ptr fs:[bx+si+11h],11h
+    191	    0320  26: 83 90 1111 11	     adc     word ptr es:[bx+si+1111h],11h
+    192	    0326  67| 83 14 33 11	     adc     word ptr ds:[ebx+esi],11h
+    193	    032B  64: 67| 83 54	33 11 +	     adc     word ptr fs:[ebx+esi+11h],11h
+    194		  11
+    195	    0332  26: 67| 83 94	33    +	     adc     word ptr es:[ebx+esi+1111h],11h
+    196		  00001111 11
+    197	    033C  66| 65: 83 10	11	     adc     dword ptr gs:[bx+si],11h
+    198	    0341  66| 64: 83 50	11 11	     adc     dword ptr fs:[bx+si+11h],11h
+    199	    0347  66| 83 90 1111 11	     adc     dword ptr ds:[bx+si+1111h],11h
+    200	    034D  66| 65: 67| 83 14 33+	     adc     dword ptr gs:[ebx+esi],11h
+    201		  11
+    202	    0354  66| 64: 67| 83 54 33+	     adc     dword ptr fs:[ebx+esi+11h],11h
+    203		  11 11
+    204	    035C  66| 67| 83 94	33    +	     adc     dword ptr ds:[ebx+esi+1111h],11h
+    205		  00001111 11
+    206					     end     Start
+Turbo Assembler	 Version 4.1	    12/15/24 12:42:42	    Page 5
 Symbol Table
 
 
@@ -201,9 +232,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "12/04/24"
-??FILENAME			  Text	 "COM	  "
-??TIME				  Text	 "13:12:53"
+??DATE				  Text	 "12/15/24"
+??FILENAME			  Text	 "com	  "
+??TIME				  Text	 "12:42:42"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -229,5 +260,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  02D2 Word	  Public  CODE
+  _TEXT				  16  0366 Word	  Public  CODE
 

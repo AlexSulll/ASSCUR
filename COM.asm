@@ -6,69 +6,72 @@ Start:
     adc10   macro op
     db      10h,op
     endm
+    adc     [si],dh
     LOCK REPNZ adc10   0C0h;10op
     REP adc10   0C8h
     adc10   0C1h
     adc10   0F1h
     adc10   0F5h
     adc10   0D5h
+    adc     [ebp+12345768h],ch
     adc     ds:[5643h],ah
     adc     gs:[bx+si],ah
     adc     fs:[bx+si],ah
-    adc     fs:[bx+si+11h],ah;mem_8_regb
-    adc     fs:[bx+si+9876h],ah;mem_16_regb
+    adc     fs:[bx+si+11h],ah
+    adc     fs:[bx+si+9876h],ah
     adc     fs:[1111h],ah
-    adc     fs:[bp],ah;mem_8_regb
+    adc     fs:[bp],ah
     adc     fs:[bx+31h],ah
-    adc     es:[bp+98h],al;mem_16_regb
+    adc     es:[bp+98h],al
     adc     ds:[eax],al
     adc     ss:[ebp],al
-    adc     gs:[12345768h],al ;todo
+    adc     gs:[12345768h],al
     adc     fs:[eax+12345768h],al
     adc     fs:[eax+ebx*8+12345768h],al
-    adc     fs:[eax+ebx+12345768h],al ;dv_sib_disp32
-    adc     ss:[eax+ebx],al ;todo
+    adc     fs:[eax+ebx+12345768h],al
+    adc     fs:[eax+ebx+12h],al
+    adc     fs:[edx+12h],al
+    adc     gs:[eax+ebx*2+44h],al
+    adc     ss:[eax+ebx],al
     
     adc11   macro op;macros 11h + oper
     db      11h,op
     endm
     adc11   0C0h;11op
-    adc11   0C8h;regvregv
-    adc11   0C1h;regvregv
-    adc11   0D1h;regvregv
-    adc11   0D9h;regvregv
+    adc11   0C8h
+    adc11   0C1h
+    adc11   0D1h
+    adc11   0D9h
     
     adce11  macro op ;macro 66h + adc11 = 66h+11h+oper
     db      66h
     adc11   op
     endm
-    adce11  0C0h;regdvregdv
-    adce11  0C8h;regdvregdv
-    adce11  0C1h;regdvregdv
-    adce11  0D1h;regdvregdv
-    adce11  0D9h;regdvregdv
-    adc     gs:[5641h],ax;mem_regv
-    adc     fs:[1234h],di;mem_regv
-    adc     ds:[bx+si],ax;mem_regv
-    adc     es:[bx+si],ax;mem_regv
-    adc     ds:[bx+si+11h],ax;mem_8_regv
-    adc     ss:[di+11h],di;mem_8_regv
-    adc     ds:[bx+si+1111h],ax;mem_16_regv
+    adce11  0C0h
+    adce11  0C8h
+    adce11  0C1h
+    adce11  0D1h
+    adce11  0D9h
+    adc     gs:[5641h],ax
+    adc     fs:[1234h],di
+    adc     ds:[bx+si],ax
+    adc     es:[bx+si],ax
+    adc     ds:[bx+si+11h],ax
+    adc     ss:[di+11h],di
+    adc     ds:[bx+si+1111h],ax
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    adc     cs:[eax],eax;rmem_reg
-    adc     fs:[eax],ax;rmem_reg
-    adc     es:[eax],ax;rmem_reg
-    adc     ss:[eax+11h],ax;rmem_8_reg
-    adc     ss:[eax+11h],al;rmem_8_reg
+    adc     cs:[eax],eax
+    adc     fs:[eax],ax
+    adc     es:[eax],ax
+    adc     ss:[eax+11h],ax
     adc     ss:[eax+11h],eax;rmem_8_reg
-    adc     fs:[eax+5684h],ax;rmem_8_reg
-    adc     gs:[eax+1111h],al;rmem_8_reg
+    adc     fs:[eax+5684h],ax
     adc     es:[eax+1111h],eax;rmem_8_reg
     adc     fs:[ebx+esi],eax;TODO sib bayit mod=00
-    adc     fs:[ebx+esi],ax;
-    adc     ds:[ebx+esi+11h],eax;
-    adc     gs:[ebx+esi+1111h],eax;
-    adc     ss:[ebx+esi+11111111h],eax;
+    adc     fs:[ebx+esi],ax
+    adc     ds:[ebx+esi+11h],eax;TODO
+    adc     gs:[ebx+esi+1111h],eax;TODO
+    adc     ss:[ebx+esi+11111111h],eax;TODO
     
     adc     ah,cl;12 op
     adc     al,dh
