@@ -59,19 +59,21 @@ Start:
     adc     ds:[bx+si+11h],ax
     adc     ss:[di+11h],di
     adc     ds:[bx+si+1111h],ax
+    adc     fs:[bp],ax
+    adc     [bp],ax
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     adc     cs:[eax],eax
     adc     fs:[eax],ax
     adc     es:[eax],ax
     adc     ss:[eax+11h],ax
-    adc     ss:[eax+11h],eax;rmem_8_reg
+    adc     ss:[eax+11h],eax
     adc     fs:[eax+5684h],ax
-    adc     es:[eax+1111h],eax;rmem_8_reg
-    adc     fs:[ebx+esi],eax;TODO sib bayit mod=00
+    adc     es:[eax+1111h],eax
+    adc     fs:[ebx+esi],eax
     adc     fs:[ebx+esi],ax
-    adc     ds:[ebx+esi+11h],eax;TODO
-    adc     gs:[ebx+esi+1111h],eax;TODO
-    adc     ss:[ebx+esi+11111111h],eax;TODO
+    adc     ds:[ebx+esi+11h],eax
+    adc     gs:[ebx+esi+1111h],eax
+    adc     ss:[ebx+esi+11111111h],eax
     
     adc     ah,cl;12 op
     adc     al,dh
