@@ -228,11 +228,11 @@ zapis_reg:
     cmp     opc,10h
     jz      zapis_breg_opc10
     cmp     opc,11h
-    jz      zapis_reg_opc11
+    jz      zapis_vreg_opc11
     cmp     opc,12h
     jz      zapis_breg_opc12
     cmp     opc,13h
-    jz      zapis_opc13;;;;;;;;;
+    jz      zapis_vreg_opc13
     cmp     opc,14h
     jz      zapis_al_opc14
     cmp     opc,15h
@@ -246,7 +246,7 @@ zapis_breg_opc10:
     call    zapis
     zap     enterr,2
     ret
-zapis_reg_opc11:
+zapis_vreg_opc11:
     cmp     reg_e,1
     jz      zapis_dvreg_opc11
     movzx   si,reg
@@ -274,7 +274,25 @@ zapis_breg_opc12:
     call    zapis
     zap     reg1,1
     ret
-zapis_opc13:
+zapis_vreg_opc13:
+    cmp     reg_e,1
+    jz      zapis_dvreg_opc13
+    movzx   si,reg
+    add     si,8
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     reg1,1
+    ret
+zapis_dvreg_opc13:
+    movzx   si,reg
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     reg1,1
     ret
 zapis_al_opc14:
     xor     si,si
@@ -1850,7 +1868,7 @@ regb_mem:
     jz      regb_rmem
     movzx   si,rm
     cmp     si,6
-    jz      regb_mem_zapis_disp16;;;;;;;;;;;;;;;;;
+    jz      regb_mem_zapis_disp16
     cmp     segm,0
     jz      regb_mem_no_segm
     mov     dx,segm
@@ -2025,11 +2043,30 @@ regbregbopc12:
     pop     si
     call    reset_values
     jmp     prefix_oper
-
 opc13:
-    jmp     Exit
-
-    
+    mov     opc,al
+    zap     Peremenaya_adc,4
+    del_na_modrm
+    cmp     mode,3
+    jz      regbregbopc13
+    cmp     mode,2
+    jz      regb_mem_16
+    cmp     mode,1
+    jz      regb_mem_8
+    jmp     regb_mem
+regbregbopc13:
+    push    si
+    call    zapis_reg
+    movzx   si,rm
+    add     si,8
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
 opc14:
     mov     opc,al
     zap     Peremenaya_adc,4

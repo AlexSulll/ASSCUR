@@ -92,6 +92,16 @@ Start:
     adc     ch,ds:[bx+si+11h]
     adc     bh,ds:[ebx+esi+11h]
     
+    adc     ah,gs:[5641h]
+    adc     al,fs:[bp]
+    adc     dl,[bp]
+    adc     ch,cs:[eax]
+    adc     dh,fs:[eax+5684h]
+    adc     ch,fs:[ebx+esi]
+    adc     ch,gs:[ebx+esi+1111h]
+    adc     bh,ss:[ebx+esi+0A1111111h]
+    
+    
     adc     ax,ax;13op
     adc     cx,dx
     adc     cx,ax
