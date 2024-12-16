@@ -73,14 +73,23 @@ Start:
     adc     fs:[ebx+esi],ax
     adc     ds:[ebx+esi+11h],eax
     adc     gs:[ebx+esi+1111h],eax
-    adc     ss:[ebx+esi+11111111h],eax
+    adc     ss:[ebx+esi+0A1111111h],eax
+    
+    adc     al,0A0h
+    adc     al,11h;14op
+    adc     al,00h
+    adc     al,37h
+    
+    adc     ax,5896h;15op
+    adc     eax,11111111h
     
     adc     ah,cl;12 op
     adc     al,dh
     adc     dl,ch
+    adc     ch,ds:[bx+si+1111h]
+    adc     dh,fs:[ebx+257603h]
     adc     ch,ds:[bx+si]
     adc     ch,ds:[bx+si+11h]
-    adc     ch,ds:[bx+si+1111h]
     adc     bh,ds:[ebx+esi+11h]
     
     adc     ax,ax;13op
@@ -95,10 +104,6 @@ Start:
     adc     edx,gs:[ebx+esi+1111h]
     adc     ebx,cs:[ebx+esi+11111111h]
     
-    adc     al,11h;14op
-    
-    adc     ax,1111h;15op
-    adc     eax,11111111h
     
     adc     cl,11h;80op
     adc     dl,11h

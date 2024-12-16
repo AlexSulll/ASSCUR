@@ -19,7 +19,7 @@ LOCALS @@
     h               db      'h','$'
     plus            db      ' + ','$'
     none            db      'none','$'
-    
+    zeroo           db      '0','$'
     opc             db      ?
     
     sib             db      ?
@@ -208,6 +208,9 @@ zap_disp:
     lodsb
     cmp     al,0
     jz      @@skip
+    push    ax
+    call    check_disp
+    pop     ax
     call    razdelenie
     mov     disp,ax
     zap     disp,2
@@ -228,6 +231,12 @@ zapis_reg:
     jz      zapis_reg_opc11
     cmp     opc,12h
     jz      zapis_breg_opc12
+    cmp     opc,13h
+    jz      zapis_opc13;;;;;;;;;
+    cmp     opc,14h
+    jz      zapis_al_opc14
+    cmp     opc,15h
+    jz      zapis_ax_opc15
     ret
 zapis_breg_opc10:
     movzx   si,reg
@@ -265,6 +274,36 @@ zapis_breg_opc12:
     call    zapis
     zap     reg1,1
     ret
+zapis_opc13:
+    ret
+zapis_al_opc14:
+    xor     si,si
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     reg1,1
+    ret
+zapis_ax_opc15:
+    cmp     reg_e,1
+    jz      zapis_eax_opc15
+    xor     si,si
+    add     si,8
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     reg1,1
+    ret
+zapis_eax_opc15:
+    xor     si,si
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     reg1,1
+    ret
 check_segm:
     cmp     segm,0
     jz      zapis_ds
@@ -292,12 +331,12 @@ zapis_segm:
 zapis_ss:
     zap     REG_SS,3
     jmp     vihod
-skip_00:
-    cmp     al,0
-    jz      skip
+check_disp:
+    cmp     al,9Fh
+    ja      @@zap_0
     ret
-skip:
-    lodsb
+@@zap_0:
+    zap     zeroo,1
     ret
 prefix_oper:
     lodsb
@@ -345,6 +384,12 @@ nachalo:
     jz      opc11
     cmp     al,12h
     jz      opc12
+    cmp     al,13h
+    jz      opc13
+    cmp     al,14h
+    jz      opc14
+    cmp     al,15h
+    jz      opc15
     jmp     Exit
 opc10:
     mov     opc,al
@@ -935,12 +980,7 @@ zapis_disp32:
     call    reset_values
     jmp     prefix_oper
 rmem_regb_no_segm:
-    cmp     si,5
-    jz      rmem_regb_zapis_ss
     zap     REG_DS,3
-    jmp     zapis_rmem_regb
-rmem_regb_zapis_ss:
-    zap     REG_SS,3
     jmp     zapis_rmem_regb
 razdelenie:
     mov     ch,10h
@@ -970,6 +1010,7 @@ mem_regb_zapis_disp16:
     push    si
     call    zapis_reg
     pop     si
+    call    reset_values
     jmp     prefix_oper
 mem_regb_no_segm:
     movzx   si,rm
@@ -1405,663 +1446,573 @@ regdvregdv:
     pop     si
     call    reset_values
     jmp     prefix_oper
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 opc12:
     mov     opc,al
     zap     Peremenaya_adc,4
     del_na_modrm
     cmp     mode,3
     jz      regbregbopc12
-    jmp     Exit
-    ;cmp     mode,2
-    ;jz      mem_16_regbopc12
-    ;cmp     mode,1
-    ;jz      mem_8_regbopc12
-    ;jmp     mem_regbopc12
-;mem_16_regbopc12:
-;    push    si
-;    cmp     mem_e,1
-;    jz      zapis_dmem_32_regb
-;    cmp     segm,0
-;    jz      mem_16_regb_no_segm
-;    mov     dx,segm
-;    mov     cx,3
-;    call    zapis
-;zapis_mem_16_regb:
-;    zap     left_par,1
-;    movzx   si,rm
-;    call    check_len
-;    shl     si,1
-;    mov     dx,effective_addresses[si]
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    inc     si
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,3
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;zapis_dmem_32_regb:
-;    call    check_segm_rmem
-;    zap     left_par,1
-;    pop     si
-;    dec     si
-;    lodsb
-;    push    ax
-;    and     al,00001111b
-;    cmp     al,04h
-;    jz      dv_sib_disp32
-;    cmp     al,0Ch
-;    jz      dv_sib_disp32
-;    pop     ax
-;    push    si
-;    movzx   si,rm
-;    add     si,16
-;    shl     si,1
-;    mov     dx,registers[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;dv_sib_disp32:
-;    pop     ax
-;    del_na_sib
-;    push    si
-;    movzx   si,sssib
-;    cmp     si,1
-;    jz      @@zapis_sib01_disp32
-;    cmp     si,2
-;    jz      @@zapis_sib10_disp32
-;    cmp     si,3
-;    jz      @@zapis_sib11_disp32
-;@@zapis_sib00_disp32:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib01_disp32:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss01_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib10_disp32:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss10_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib11_disp32:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss11_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;mem_16_regb_no_segm:
-;    movzx   si,rm
-;    cmp     si,2
-;    jz      mem_16_regb_zapis_ss
-;    cmp     si,3
-;    jz      mem_16_regb_zapis_ss
-;    cmp     si,6
-;    jz      mem_16_regb_zapis_ss
-;mem_16_regb_zapis_ds:
-;    zap     REG_DS,3
-;    jmp     zapis_mem_16_regb
-;mem_16_regb_zapis_ss:
-;    zap     REG_SS,3
-;    jmp     zapis_mem_16_regb
-;mem_8_regb:
-;    cmp     mem_e,1
-;    jz      rmem_8_regb
-;    push    si
-;    cmp     segm,0
-;    jz      mem_8_regb_no_segm
-;    mov     dx,segm
-;    mov     cx,3
-;    call    zapis
-;zapis_mem_8_regb:
-;    zap     left_par,1
-;    movzx   si,rm
-;    call    check_len
-;    shl     si,1
-;    mov     dx,effective_addresses[si]
-;    call    zapis
-;    pop     si
-;    lodsb
-;    cmp     al,0
-;    jz      zz
-;    call    razdelenie
-;    push    si
-;    mov     disp,ax
-;    zap     plus,3
-;    zap     disp,2
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;check_len:
-;    cmp     rm,3
-;    jbe     len_7
-;    mov     cx,2
-;    ret
-;len_7:
-;    mov     cx,7
-;    ret
-;zz:
-;    push    si
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;mem_8_regb_no_segm:
-;    movzx   si,rm
-;    cmp     si,2
-;    jz      mem_8_regb_zapis_ss
-;    cmp     si,3
-;    jz      mem_8_regb_zapis_ss
-;    cmp     si,6
-;    jz      mem_8_regb_zapis_ss
-;mem_8_regb_zapis_ds:
-;    zap     REG_DS,3
-;    jmp     zapis_mem_8_regb
-;mem_8_regb_zapis_ss:
-;    zap     REG_SS,3
-;    jmp     zapis_mem_8_regb
-;rmem_8_regb:
-;    push    si
-;    movzx   si,rm
-;    cmp     segm,0
-;    jz      rmem_8_regb_no_segm
-;    mov     dx,segm
-;    mov     cx,3
-;    call    zapis
-;zapis_rmem_8_regb:
-;    zap     left_par,1
-;    mov     al,moderm
-;    and     al,00001111b
-;    cmp     al,04h
-;    jz      dv_sib_disp8
-;    cmp     al,0Ch
-;    jz      dv_sib_disp8
-;    movzx   si,rm
-;    add     si,16
-;    shl     si,1
-;    mov     dx,registers[si]
-;    mov     cx,3
-;    call    zapis
-;    pop     si
-;    lodsb
-;    cmp     al,0
-;    jz      skip_00z
-;    zap     plus,3
-;    dec     si
-;    call    zap_disp
-;    add     si,2
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    push    si
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;skip_00z:
-;    push    si
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;rmem_8_regb_no_segm:
-;    cmp     si,5
-;    jz      rmem_8_regb_zapis_ss
-;    zap     REG_DS,3
-;    jmp     zapis_rmem_8_regb
-;rmem_8_regb_zapis_ss:
-;    zap     REG_SS,3
-;    jmp     zapis_rmem_8_regb
-;dv_sib_disp8:
-;    pop     si
-;    del_na_sib
-;    push    si
-;    movzx   si,sssib
-;    cmp     si,1
-;    jz      @@zapis_sib01_disp8
-;    cmp     si,2
-;    jz      @@zapis_sib10_disp8
-;    cmp     si,3
-;    jz      @@zapis_sib11_disp8
-;@@zapis_sib00_disp8:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    call    zap_disp
-;    add     si,2
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib01_disp8:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss01_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    call    zap_disp
-;    add     si,2
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib10_disp8:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss10_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    call    zap_disp
-;    add     si,2
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib11_disp8:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss11_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     plus,3
-;    pop     si
-;    call    zap_disp
-;    add     si,2
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;mem_regb:
-;    cmp     mem_e,1
-;    jz      rmem_regb
-;    push    si
-;    movzx   si,rm
-;    cmp     si,6
-;    jz      mem_regb_zapis_disp16
-;    cmp     segm,0
-;    jz      mem_regb_no_segm
-;    mov     dx,segm
-;    mov     cx,3
-;    call    zapis
-;zapis_memb:
-;    zap     left_par,1
-;    movzx   si,rm
-;    call    check_len
-;    shl     si,1
-;    mov     dx,effective_addresses[si]
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;rmem_regb:
-;    push    si
-;    movzx   si,rm
-;    cmp     segm,0
-;    jz      rmem_regb_no_segm
-;    mov     dx,segm
-;    mov     cx,3
-;    call    zapis
-;zapis_rmem_regb:
-;    cmp     si,4
-;    jz      sib_rmem_regb
-;    cmp     si,5
-;    jz      zapis_disp32
-;    zap     left_par,1
-;    add     si,16
-;    shl     si,1
-;    mov     dx,registers[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;sib_rmem_regb:
-;    zap     left_par,1
-;    pop     si
-;    del_na_sib
-;    push    si
-;    movzx   si,sssib
-;    cmp     si,1
-;    jz      @@zapis_sib01
-;    cmp     si,2
-;    jz      @@zapis_sib10
-;    cmp     si,3
-;    jz      @@zapis_sib11
-;@@zapis_sib00:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib01:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss01_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib10:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss10_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;@@zapis_sib11:
-;    movzx   si,base
-;    shl     si,1
-;    mov     dx,ss00_sib[si]
-;    mov     cx,3
-;    call    zapis
-;    zap     plus,3
-;    movzx   si,index
-;    shl     si,1
-;    mov     dx,ss11_sib[si]
-;    mov     cx,5
-;    call    zapis
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;zapis_disp32:
-;    zap     left_par,1
-;    pop     si
-;    add     si,3
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,5
-;    push    si
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    call    zapis_reg
-;    pop     si
-;    call    reset_values
-;    jmp     prefix_oper
-;rmem_regb_no_segm:
-;    cmp     si,5
-;    jz      rmem_regb_zapis_ss
-;    zap     REG_DS,3
-;    jmp     zapis_rmem_regb
-;rmem_regb_zapis_ss:
-;    zap     REG_SS,3
-;    jmp     zapis_rmem_regb
-;mem_regb_zapis_disp16:
-;    pop     si
-;    call    check_segm
-;    zap     left_par,1
-;    inc     si
-;    call    zap_disp
-;    call    zap_disp
-;    add     si,3
-;    zap     h,1
-;    zap     right_par,1
-;    zap     reg1,1
-;    push    si
-;    call    zapis_reg
-;    pop     si
-;    jmp     prefix_oper
-;mem_regb_no_segm:
-;    movzx   si,rm
-;    cmp     si,2
-;    jz      mem_regb_zapis_ss
-;    cmp     si,3
-;    jz      mem_regb_zapis_ss
-;mem_regb_zapis_ds:
-;    zap     REG_DS,3
-;    jmp     zapis_memb
-;mem_regb_zapis_ss:
-;    zap     REG_SS,3
-;    jmp     zapis_memb
+    cmp     mode,2
+    jz      regb_mem_16
+    cmp     mode,1
+    jz      regb_mem_8
+    jmp     regb_mem
+regb_mem_16:
+    push    si
+    call    zapis_reg
+    cmp     mem_e,1
+    jz      zapis_regb_dmem_32
+    cmp     segm,0
+    jz      regb_mem_16_no_segm
+    mov     dx,segm
+    mov     cx,3
+    call    zapis
+zapis_regb_mem_16:
+    zap     left_par,1
+    movzx   si,rm
+    call    check_len
+    shl     si,1
+    mov     dx,effective_addresses[si]
+    call    zapis
+    zap     plus,3
+    pop     si
+    inc     si
+    call    zap_disp
+    call    zap_disp
+    add     si,3
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+zapis_regb_dmem_32:
+    call    check_segm_rmem
+    zap     left_par,1
+    pop     si
+    dec     si
+    lodsb
+    push    ax
+    and     al,00001111b
+    cmp     al,04h
+    jz      dv_sib_disp32_opc12
+    cmp     al,0Ch
+    jz      dv_sib_disp32_opc12
+    pop     ax
+    push    si
+    movzx   si,rm
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+dv_sib_disp32_opc12:
+    pop     ax
+    del_na_sib
+    push    si
+    movzx   si,sssib
+    cmp     si,1
+    jz      @@zapis_sib01_disp32
+    cmp     si,2
+    jz      @@zapis_sib10_disp32
+    cmp     si,3
+    jz      @@zapis_sib11_disp32
+@@zapis_sib00_disp32:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib01_disp32:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss01_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib10_disp32:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss10_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib11_disp32:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss11_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+regb_mem_16_no_segm:
+    movzx   si,rm
+    cmp     si,2
+    jz      regb_mem_16_zapis_ss
+    cmp     si,3
+    jz      regb_mem_16_zapis_ss
+    cmp     si,6
+    jz      regb_mem_16_zapis_ss
+regb_mem_16_zapis_ds:
+    zap     REG_DS,3
+    jmp     zapis_regb_mem_16
+regb_mem_16_zapis_ss:
+    zap     REG_SS,3
+    jmp     zapis_regb_mem_16
+regb_mem_8:
+    push    si
+    call    zapis_reg
+    cmp     mem_e,1
+    jz      regb_rmem_8
+    cmp     segm,0
+    jz      regb_mem_8_no_segm
+    mov     dx,segm
+    mov     cx,3
+    call    zapis
+zapis_regb_mem_8:
+    zap     left_par,1
+    movzx   si,rm
+    call    check_len
+    shl     si,1
+    mov     dx,effective_addresses[si]
+    call    zapis
+    pop     si
+    lodsb
+    cmp     al,0
+    jz      z0
+    call    razdelenie
+    mov     disp,ax
+    zap     plus,3
+    zap     disp,2
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+z0:
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+regb_mem_8_no_segm:
+    movzx   si,rm
+    cmp     si,2
+    jz      regb_mem_8_zapis_ss
+    cmp     si,3
+    jz      regb_mem_8_zapis_ss
+    cmp     si,6
+    jz      regb_mem_8_zapis_ss
+regb_mem_8_zapis_ds:
+    zap     REG_DS,3
+    jmp     zapis_regb_mem_8
+regb_mem_8_zapis_ss:
+    zap     REG_SS,3
+    jmp     zapis_regb_mem_8
+regb_rmem_8:
+    movzx   si,rm
+    cmp     segm,0
+    jz      regb_rmem_8_no_segm
+    mov     dx,segm
+    mov     cx,3
+    call    zapis
+zapis_regb_rmem_8:
+    zap     left_par,1
+    mov     al,moderm
+    and     al,00001111b
+    cmp     al,04h
+    jz      dv_sib_disp8_opc12
+    cmp     al,0Ch
+    jz      dv_sib_disp8_opc12
+    movzx   si,rm
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    pop     si
+    lodsb
+    cmp     al,0
+    jz      skip_000z
+    zap     plus,3
+    dec     si
+    call    zap_disp
+    add     si,2
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+skip_000z:
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+regb_rmem_8_no_segm:
+    cmp     si,5
+    jz      regb_rmem_8_zapis_ss
+    zap     REG_DS,3
+    jmp     zapis_regb_rmem_8
+regb_rmem_8_zapis_ss:
+    zap     REG_SS,3
+    jmp     zapis_regb_rmem_8
+dv_sib_disp8_opc12:
+    pop     si
+    del_na_sib
+    push    si
+    movzx   si,sssib
+    cmp     si,1
+    jz      @@zapis_sib01_disp8
+    cmp     si,2
+    jz      @@zapis_sib10_disp8
+    cmp     si,3
+    jz      @@zapis_sib11_disp8
+@@zapis_sib00_disp8:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    pop     si
+    call    zap_disp
+    add     si,2
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib01_disp8:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss01_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    call    zap_disp
+    add     si,2
+    push    si
+    zap     h,1
+    zap     right_par,1
+    zap     reg1,1
+    call    zapis_reg
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib10_disp8:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss10_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    call    zap_disp
+    add     si,2
+    push    si
+    zap     h,1
+    zap     right_par,1
+    zap     reg1,1
+    call    zapis_reg
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib11_disp8:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss11_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     plus,3
+    pop     si
+    call    zap_disp
+    add     si,2
+    push    si
+    zap     h,1
+    zap     right_par,1
+    zap     reg1,1
+    call    zapis_reg
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+regb_mem:
+    push    si
+    call    zapis_reg
+    cmp     mem_e,1
+    jz      regb_rmem
+    movzx   si,rm
+    cmp     si,6
+    jz      regb_mem_zapis_disp16;;;;;;;;;;;;;;;;;
+    cmp     segm,0
+    jz      regb_mem_no_segm
+    mov     dx,segm
+    mov     cx,3
+    call    zapis
+zapis_memb_opc12:
+    zap     left_par,1
+    movzx   si,rm
+    call    check_len
+    shl     si,1
+    mov     dx,effective_addresses[si]
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+regb_rmem:
+    movzx   si,rm
+    cmp     segm,0
+    jz      regb_rmem_no_segm
+    mov     dx,segm
+    mov     cx,3
+    call    zapis
+zapis_regb_rmem:
+    cmp     si,4
+    jz      sib_regb_rmem
+    cmp     si,5
+    jz      zapis_disp32_opc12
+    zap     left_par,1
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+sib_regb_rmem:
+    zap     left_par,1
+    pop     si
+    del_na_sib
+    push    si
+    movzx   si,sssib
+    cmp     si,1
+    jz      @@zapis_sib01
+    cmp     si,2
+    jz      @@zapis_sib10
+    cmp     si,3
+    jz      @@zapis_sib11
+@@zapis_sib00:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib01:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss01_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib10:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss10_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+@@zapis_sib11:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss11_sib[si]
+    mov     cx,5
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+zapis_disp32_opc12:
+    zap     left_par,1
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+regb_rmem_no_segm:
+    zap     REG_DS,3
+    jmp     zapis_regb_rmem
+regb_mem_zapis_disp16:
+    pop     si
+    call    check_segm
+    zap     left_par,1
+    inc     si
+    call    zap_disp
+    call    zap_disp
+    add     si,3
+    zap     h,1
+    zap     right_par,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+regb_mem_no_segm:
+    movzx   si,rm
+    cmp     si,2
+    jz      regb_mem_zapis_ss
+    cmp     si,3
+    jz      regb_mem_zapis_ss
+regb_mem_zapis_ds:
+    zap     REG_DS,3
+    jmp     zapis_memb_opc12
+regb_mem_zapis_ss:
+    zap     REG_SS,3
+    jmp     zapis_memb_opc12
 regbregbopc12:
     push    si
     call    zapis_reg
@@ -2075,9 +2026,55 @@ regbregbopc12:
     call    reset_values
     jmp     prefix_oper
 
+opc13:
+    jmp     Exit
 
-
-
+    
+opc14:
+    mov     opc,al
+    zap     Peremenaya_adc,4
+    push    si
+    call    zapis_reg
+    pop     si
+    lodsb
+    push    ax
+    call    check_disp
+    pop     ax
+    call    razdelenie
+    mov     disp,ax
+    zap     disp,2
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+opc15:
+    mov     opc,al
+    zap     Peremenaya_adc,4
+    push    si
+    call    zapis_reg
+    cmp     reg_e,1
+    jz      opc15_imm32
+    pop     si
+    inc     si
+    call    zap_disp
+    call    zap_disp
+    add     si,3
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+opc15_imm32:
+    pop     si
+    add     si,3
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    call    zap_disp
+    add     si,5
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
 Exit:
     mov     ax,4C00h
     int     21h
