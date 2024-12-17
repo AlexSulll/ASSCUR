@@ -124,7 +124,7 @@ Start:
     adc     bh,11h
     adc     byte ptr ds:[bx+si],11h
     adc     byte ptr fs:[bx+si+11h],11h
-    adc     byte ptr es:[bx+si+1111h],11h
+    adc     byte ptr es:[bx+si+1111h],11h;fix
 
     adc     cx,1111h;81op
     adc     dx,1111h
