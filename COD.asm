@@ -2167,7 +2167,6 @@ zapis_mem_16_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    inc     si
     call    zap_disp
     call    zap_disp
     add     si,3
