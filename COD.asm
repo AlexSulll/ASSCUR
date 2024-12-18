@@ -214,6 +214,12 @@ zapis_disp32:
     call    zap_disp
     add     si,5
     ret
+zapis_disp16:
+    inc     si
+    call    zap_disp
+    call    zap_disp
+    add     si,3
+    ret
 zap_disp:
     lodsb
     cmp     al,0
@@ -233,6 +239,8 @@ reset_values:
     mov     reg_e,0
     mov     mem_e,0
     mov     segm,0
+    mov     opc,0
+    mov     moderm,0
     ret
 zapis_reg:
     cmp     opc,10h
@@ -469,10 +477,7 @@ zapis_mem_16_regb:
     call    zapis
     zap     plus,3
     pop     si
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     push    si
     zap     h,1
     zap     right_par,1
@@ -1019,10 +1024,7 @@ mem_regb_zapis_disp16:
     pop     si
     call    check_segm
     zap     left_par,1
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -1084,10 +1086,7 @@ zapis_mem_16_regv:
     call    zapis
     zap     plus,3
     pop     si
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     push    si
     zap     h,1
     zap     right_par,1
@@ -1409,10 +1408,7 @@ mem_regv_zapis_disp16:
     pop     si
     call    check_segm
     zap     left_par,1
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -1490,10 +1486,7 @@ zapis_regb_mem_16:
     call    zapis
     zap     plus,3
     pop     si
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     zap     h,1
     zap     right_par,1
     zap     enterr,2
@@ -1976,10 +1969,7 @@ regb_mem_zapis_disp16:
     pop     si
     call    check_segm
     zap     left_par,1
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     zap     h,1
     zap     right_par,1
     zap     enterr,2
@@ -2058,22 +2048,14 @@ opc15:
     cmp     reg_e,1
     jz      opc15_imm32
     pop     si
-    inc     si
-    call    zap_disp
-    call    zap_disp
-    add     si,3
+    call    zapis_disp16
     zap     h,1
     zap     enterr,2
     call    reset_values
     jmp     prefix_oper
-opc15_imm32:;;;;;;;;;;;;;;;;;;;;;;;;;;;;TODO 
+opc15_imm32:
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     enterr,2
     call    reset_values
@@ -2126,7 +2108,7 @@ zapis_dmem_32_imm8:
     call    check_segm_rmem
     zap     left_par,1
     pop     si
-    dec     si
+    sub     si,2
     lodsb
     push    ax
     and     al,00001111b
@@ -2144,12 +2126,7 @@ zapis_dmem_32_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2184,12 +2161,7 @@ dv_sib_disp32_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2213,12 +2185,7 @@ dv_sib_disp32_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2242,12 +2209,7 @@ dv_sib_disp32_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2271,12 +2233,7 @@ dv_sib_disp32_imm8:
     call    zapis
     zap     plus,3
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2317,6 +2274,7 @@ zapis_mem_8_imm8:
     mov     dx,effective_addresses[si]
     call    zapis
     pop     si
+    dec     si
     lodsb
     cmp     al,0
     jz      zz2
@@ -2327,7 +2285,6 @@ zapis_mem_8_imm8:
     zap     h,1
     zap     right_par,1
     zap     reg1,1
-    dec     si
     call    zap_disp
     add     si,2
     zap     h,1
@@ -2584,6 +2541,7 @@ zapis_rmem_imm8:
 sib_rmem_imm8:
     zap     left_par,1
     pop     si
+    dec     si
     del_na_sib
     push    si
     movzx   si,sssib
@@ -2680,12 +2638,7 @@ sib_rmem_imm8:
 zapis_disp32_opc80:
     zap     left_par,1
     pop     si
-    add     si,3
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    call    zap_disp
-    add     si,5
+    call    zapis_disp32
     zap     h,1
     zap     right_par,1
     zap     reg1,1
@@ -2702,7 +2655,6 @@ mem_imm8_zapis_disp16:
     pop     si
     call    check_segm
     zap     left_par,1
-    inc     si
     call    zap_disp
     call    zap_disp
     add     si,3

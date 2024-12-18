@@ -125,11 +125,11 @@ Start:
     adc     byte ptr ds:[bx+si],11h
     adc     byte ptr fs:[bx+si+11h],11h
     adc     byte ptr es:[bx+si+1111h],11h
-    adc     byte ptr es:[ebx+esi],11h;fix
-    adc     byte ptr fs:[eax+5684h],11h;fix
-    adc     byte ptr ss:[ebx+esi+0A1111111h],11h;fix
-    adc     byte ptr fs:[1234h],11h;fix
-    adc     byte ptr fs:[eax+ebx*8+12345768h],11h;fix
+    adc     byte ptr es:[ebx+esi],11h
+    adc     byte ptr fs:[eax+5684h],11h
+    adc     byte ptr ss:[ebx+esi+0A1111111h],11h
+    adc     byte ptr fs:[1234h],11h
+    adc     byte ptr fs:[eax+ebx*8+12345768h],11h
     
     
     
