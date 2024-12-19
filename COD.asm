@@ -222,7 +222,7 @@ zapis_disp16:
     ret
 zap_disp:
     lodsb
-    cmp     al,0
+    or      al,al
     jz      @@skip
     push    ax
     call    check_disp
@@ -425,9 +425,9 @@ zapis_dvreg_opc83:
     zap     reg1,1
     ret
 check_segm:
-    cmp     segm,0
-    jz      zapis_ds
     mov     dx,segm
+    or      dx,dx
+    jz      zapis_ds
     mov     cx,3
     call    zapis
     jmp     vihod
@@ -436,9 +436,9 @@ zapis_ds:
 vihod:
     ret
 check_segm_rmem:
-    cmp     segm,0
-    jz      zapis_segm
     mov     dx,segm
+    or      dx,dx
+    jz      zapis_segm
     mov     cx,3
     call    zapis
     jmp     vihod
@@ -804,33 +804,7 @@ opcBC:
     call    zapis_mem
     zap     enterr,2
     call    reset_values
-    jmp     prefix_oper
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    jmp     prefix_oper;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 zapis_mem:
     cmp     mode,2
     jz      mem_16
@@ -841,9 +815,9 @@ mem_16:
     push    si
     cmp     mem_e,1
     jz      zapis_dmem_32
-    cmp     segm,0
-    jz      mem_16_no_segm
     mov     dx,segm
+    or      dx,dx
+    jz      mem_16_no_segm
     mov     cx,3
     call    zapis
 zapis_mem_16:
@@ -986,9 +960,9 @@ mem_8:
     cmp     mem_e,1
     jz      rmem_8
     push    si
-    cmp     segm,0
-    jz      mem_8_no_segm
     mov     dx,segm
+    or      dx,dx
+    jz      mem_8_no_segm
     mov     cx,3
     call    zapis
 zapis_mem_8:
@@ -1000,7 +974,7 @@ zapis_mem_8:
     call    zapis
     pop     si
     lodsb
-    cmp     al,0
+    or      al,al
     jz      zz3
     call    razdelenie
     mov     disp,ax
@@ -1029,9 +1003,9 @@ mem_8_zapis_ss:
 rmem_8:
     push    si
     movzx   si,rm
-    cmp     segm,0
-    jz      rmem_8_no_segm
     mov     dx,segm
+    or      dx,dx
+    jz      rmem_8_no_segm
     mov     cx,3
     call    zapis
 zapis_rmem_8:
@@ -1161,9 +1135,9 @@ mem:
     movzx   si,rm
     cmp     si,6
     jz      mem_zapis_disp16
-    cmp     segm,0
-    jz      mem_no_segm
     mov     dx,segm
+    or      dx,dx
+    jz      mem_no_segm
     mov     cx,3
     call    zapis
 zapis_memb:
@@ -1179,9 +1153,9 @@ zapis_memb:
 rmem:
     push    si
     movzx   si,rm
-    cmp     segm,0
-    jz      rmem_no_segm
     mov     dx,segm
+    or      dx,dx
+    jz      rmem_no_segm
     mov     cx,3
     call    zapis
 zapis_rmem:
