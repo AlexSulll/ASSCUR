@@ -422,15 +422,6 @@ zapis_dvreg_opc83:
     call    zapis
     zap     reg1,1
     ret
-    
-    
-    
-    
-    
-    
-    
-    
-    
 check_segm:
     cmp     segm,0
     jz      zapis_ds
@@ -782,41 +773,6 @@ mem_imm8:
     zap     enterr,2
     call    reset_values
     jmp     prefix_oper
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 zapis_mem:
     cmp     mode,2
     jz      mem_16
