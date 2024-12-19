@@ -388,13 +388,49 @@ zapis_dvreg_opc81:
     add     si,2
     shl     si,1
     mov     dx,type_ovr_ptrs[si]
-    mov     cx,9
+    mov     cx,10
     call    zapis
     ret
 zapis_opc83:
+    cmp     reg_e,1
+    jz      zapis_dv_opc83
     cmp     moderm,0D0h
-    ja      zapis_vreg_opc13
+    ja      zapis_vreg_opc81
+    xor     si,si
+    inc     si
+    shl     si,1
+    mov     dx,type_ovr_ptrs[si]
+    mov     cx,9
+    call    zapis
     ret
+zapis_dv_opc83:
+    cmp     moderm,0D0h
+    jae     zapis_dvreg_opc83
+    xor     si,si
+    add     si,2
+    shl     si,1
+    mov     dx,type_ovr_ptrs[si]
+    mov     cx,10
+    call    zapis
+    ret
+zapis_dvreg_opc83:
+    movzx   si,rm
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     reg1,1
+    ret
+    
+    
+    
+    
+    
+    
+    
+    
+    
 check_segm:
     cmp     segm,0
     jz      zapis_ds
@@ -711,11 +747,41 @@ disp32_opc81:
     call    reset_values
     jmp     prefix_oper
 opc83:
-    ;mov     opc,al
-    ;del_na_modrm
-    ;cmp     moderm,0D0h
-    ;ja      opc80
-    jmp     Exit
+    mov     opc,al
+    del_na_modrm
+    zap     Peremenaya_adc,4
+    push    si
+    call    zapis_reg
+    pop     si
+    cmp     moderm,0D0h
+    jae     vreg_imm8
+    jmp     mem_imm8
+vreg_imm8:
+    lodsb
+    push    ax
+    call    check_disp
+    pop     ax
+    call    razdelenie
+    mov     disp,ax
+    zap     disp,2
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+mem_imm8:
+    call    zapis_mem
+    zap     reg1,1
+    lodsb
+    push    ax
+    call    check_disp
+    pop     ax
+    call    razdelenie
+    mov     disp,ax
+    zap     disp,2
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
     
 
 

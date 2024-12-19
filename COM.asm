@@ -154,6 +154,7 @@ Start:
     adc     dword ptr ds:[ebx+esi+1111h],11116543h
     
     adc     cx,11h;83op
+    adc     ax,11h
     adc     dx,11h
     adc     bx,11h
     adc     sp,11h
