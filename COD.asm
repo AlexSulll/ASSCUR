@@ -259,6 +259,8 @@ zapis_reg:
     jz      zapis_opc80
     cmp     opc,81h
     jz      zapis_opc81
+    cmp     opc,83h
+    jz      zapis_opc83
     ret
 zapis_breg_opc10:
     movzx   si,reg
@@ -389,6 +391,10 @@ zapis_dvreg_opc81:
     mov     cx,9
     call    zapis
     ret
+zapis_opc83:
+    cmp     moderm,0D0h
+    ja      zapis_vreg_opc13
+    ret
 check_segm:
     cmp     segm,0
     jz      zapis_ds
@@ -501,7 +507,8 @@ nachalo:
     jz      opc80
     cmp     al,81h
     jz      opc81
-    
+    cmp     al,83h
+    jz      opc83
     jmp     Exit
 opc10:
     mov     opc,al
@@ -685,14 +692,65 @@ opc81:
     ja      opc15
     zap     Peremenaya_adc,4
     mov     opc,81h
-    int 3
-    inc     si
     push    si
     call    zapis_reg
     pop     si
+    call    zapis_mem
+    zap     reg1,1
+    cmp     reg_e,1
+    jz      disp32_opc81
+    call    zapis_disp16
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+disp32_opc81:
+    call    zapis_disp32
+    zap     h,1
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+opc83:
+    ;mov     opc,al
+    ;del_na_modrm
+    ;cmp     moderm,0D0h
+    ;ja      opc80
     jmp     Exit
     
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 zapis_mem:
     cmp     mode,2
     jz      mem_16
