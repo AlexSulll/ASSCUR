@@ -248,7 +248,18 @@ Start:
     bsf     edx,gs:[eax+ebx*2+44h]
     bsf     ebx,ss:[eax+ebx]
     
-    
+    movs byte ptr es:[di],fs:[si]
+    movs byte ptr es:[edi],gs:[esi]
+    movs word ptr es:[di],fs:[si]
+    movs word ptr es:[edi],gs:[esi]
+    movs byte ptr es:[di],ds:[si]
+    movs byte ptr es:[edi],ds:[esi]
+    movs word ptr es:[di],ds:[si]
+    movs word ptr es:[edi],ds:[esi]
+    movs dword ptr es:[di],fs:[si]
+    movs dword ptr es:[edi],gs:[esi]
+    movs dword ptr es:[di],ds:[si]
+    movs dword ptr es:[edi],ds:[esi]
     end     Start
     
     

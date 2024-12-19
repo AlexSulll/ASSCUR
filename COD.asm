@@ -263,6 +263,10 @@ zapis_reg:
     jz      zapis_opc83
     cmp     opc,0BCh
     jz      zapis_vreg_opc13
+    cmp     opc,0A4h
+    jz      zapis_opcA4
+    cmp     opc,0A5h
+    jz      zapis_opcA5
     ret
 zapis_breg_opc10:
     movzx   si,reg
@@ -424,6 +428,74 @@ zapis_dvreg_opc83:
     call    zapis
     zap     reg1,1
     ret
+zapis_opcA4:
+    xor     si,si
+    mov     dx,type_ovr_ptrs[si]
+    mov     cx,9
+    call    zapis
+    zap     REG_ES,3
+    zap     left_par,1
+    cmp     mem_e,1
+    jz      zapis_rmem_opcA4
+    add     si,15
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     right_par,1
+    zap     reg1,1
+    ret
+zapis_rmem_opcA4:
+    add     si,23
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     right_par,1
+    zap     reg1,1
+    ret
+zapis_opcA5:
+    cmp     reg_e,1
+    jz      zapis_dvopcA5
+    xor     si,si
+    inc     si
+    shl     si,1
+    mov     dx,type_ovr_ptrs[si]
+    mov     cx,9
+    call    zapis
+    zap     REG_ES,3
+    zap     left_par,1
+    xor     si,si
+    cmp     mem_e,1
+    jz      zapis_rmem_opcA4
+    add     si,15
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     right_par,1
+    zap     reg1,1
+    ret
+zapis_dvopcA5:
+    xor     si,si
+    add     si,2
+    shl     si,1
+    mov     dx,type_ovr_ptrs[si]
+    mov     cx,10
+    call    zapis
+    zap     REG_ES,3
+    zap     left_par,1
+    xor     si,si
+    cmp     mem_e,1
+    jz      zapis_rmem_opcA4
+    add     si,15
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     right_par,1
+    zap     reg1,1
+    ret
 check_segm:
     mov     dx,segm
     or      dx,dx
@@ -542,6 +614,10 @@ nachalo:
     jz      opc83
     cmp     al,0BCh
     jz      opcBC
+    cmp     al,0A4h
+    jz      opcA4
+    cmp     al,0A5h
+    jz      opcA5
     jmp     Exit
 opc10:
     mov     opc,al
@@ -804,7 +880,45 @@ opcBC:
     call    zapis_mem
     zap     enterr,2
     call    reset_values
-    jmp     prefix_oper;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    jmp     prefix_oper
+opcA4:
+    mov     opc,al
+    zap     Peremenaya_movs,5
+    cmp     mem_e,1
+    jz      rmem_opcA4
+    push    si
+    call    zapis_reg
+    call    check_segm
+    zap     left_par,1
+    xor     si,si
+    add     si,14
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+rmem_opcA4:
+    push    si
+    call    zapis_reg
+    call    check_segm
+    zap     left_par,1
+    xor     si,si
+    add     si,22
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
+    call    zapis
+    zap     right_par,1
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+opcA5:
+    jmp     opcA4
 zapis_mem:
     cmp     mode,2
     jz      mem_16
@@ -1263,7 +1377,6 @@ mem_zapis_disp16:
     zap     right_par,1
     ret
 mem_no_segm:
-    movzx   si,rm
     cmp     si,2
     jz      mem_zapis_ss
     cmp     si,3
@@ -1277,10 +1390,4 @@ mem_zapis_ss:
 Exit:
     mov     ax,4C00h
     int     21h
-    end     Start 
-    
-    
-    
-    
-    
-    
+    end     Start
