@@ -3,6 +3,11 @@
 .code
 org     100h
 Start:
+    adc     fs:[esp+11h],al
+    adc     fs:[ebp],al
+    adc     fs:[eax*8],al
+    adc     fs:[esp],al
+    adc     [ebp+0AFFFFFFFh],ch
     adc10   macro op
     db      10h,op
     endm
