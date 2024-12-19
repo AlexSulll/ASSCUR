@@ -3,7 +3,7 @@ LOCALS @@
 .486
 .stack  100h
 .data
-    buffer          db      1024 DUP(?)
+    buffer          db      2048 DUP(?)
     read_file       db      'COM.COM',0
     com_file        db      'result.asm',0
     id_file         dw      ?
@@ -187,7 +187,7 @@ Start:
     int     21h
     mov     bx,ax
     mov     ax,3F00h
-    mov     cx,1024d
+    mov     cx,2048d
     mov     dx,offset buffer
     int     21h
     mov     ax,3E00h
@@ -261,6 +261,8 @@ zapis_reg:
     jz      zapis_opc81
     cmp     opc,83h
     jz      zapis_opc83
+    cmp     opc,0BCh
+    jz      zapis_vreg_opc13
     ret
 zapis_breg_opc10:
     movzx   si,reg
@@ -518,6 +520,8 @@ prefix_address:
     mov     mem_e,1
     lodsb
 nachalo:
+    cmp     al,0Fh
+    jz      prefix_oper
     cmp     al,10h
     jz      opc10
     cmp     al,11h
@@ -536,6 +540,8 @@ nachalo:
     jz      opc81
     cmp     al,83h
     jz      opc83
+    cmp     al,0BCh
+    jz      opcBC
     jmp     Exit
 opc10:
     mov     opc,al
@@ -644,11 +650,24 @@ opc13:
 regvregvopc13:
     push    si
     call    zapis_reg
+    cmp     reg_e,1
+    jz      regdvregdvopc13
     movzx   si,rm
     add     si,8
     shl     si,1
     mov     dx,registers[si]
     mov     cx,2
+    call    zapis
+    zap     enterr,2
+    pop     si
+    call    reset_values
+    jmp     prefix_oper
+regdvregdvopc13:
+    movzx   si,rm
+    add     si,16
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,3
     call    zapis
     zap     enterr,2
     pop     si
@@ -773,6 +792,45 @@ mem_imm8:
     zap     enterr,2
     call    reset_values
     jmp     prefix_oper
+opcBC:
+    mov     opc,al
+    zap     Peremenaya_bsf,4
+    del_na_modrm
+    cmp     mode,3
+    jz      regvregvopc13
+    push    si
+    call    zapis_reg
+    pop     si
+    call    zapis_mem
+    zap     enterr,2
+    call    reset_values
+    jmp     prefix_oper
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 zapis_mem:
     cmp     mode,2
     jz      mem_16

@@ -6,7 +6,7 @@ Start:
     adc10   macro op
     db      10h,op
     endm
-    ;adc     [si],dh
+    adc     [si],dh
     LOCK REPNZ adc10   0C0h;10op
     REP adc10   0C8h
     adc10   0C1h
@@ -101,7 +101,13 @@ Start:
     adc     ch,gs:[ebx+esi+1111h]
     adc     bh,ss:[ebx+esi+0A1111111h]
     
-    
+    adc13   macro op
+    db      13h,op
+    endm
+    adce13  macro op ;macro 66h + adc13 = 66h+13h+oper
+    db      66h
+    adc13   op
+    endm
     adc     ax,ax;13op
     adc     cx,dx
     adc     cx,ax
@@ -109,6 +115,9 @@ Start:
     adc     ax,es:[bx+si]
     adc     ax,es:[bx+si+11h]
     adc     ax,es:[bx+si+1111h]
+    adc     ax,es:[ebx+esi]
+    adce13  0C0h
+    adc     eax,es:[bx+si]
     adc     eax,es:[ebx+esi]
     adc     ecx,fs:[ebx+esi+11h]
     adc     edx,gs:[ebx+esi+1111h]
@@ -181,6 +190,65 @@ Start:
     adc     dword ptr gs:[ebx+esi],11h
     adc     dword ptr fs:[ebx+esi+11h],11h
     adc     dword ptr ds:[ebx+esi+1111h],11h
+    
+    
+    bsf     ax,ax;opcBC
+    bsf     cx,dx
+    bsf     cx,ax
+    bsf     ax,cx
+    bsf     ax,es:[bx+si]
+    bsf     ax,es:[bx+si+11h]
+    bsf     ax,es:[bx+si+1111h]
+    bsf     ax,es:[ebx+esi]
+    bsf     eax,eax
+    bsf     eax,es:[bx+si]
+    bsf     eax,es:[ebx+esi]
+    bsf     ecx,fs:[ebx+esi+11h]
+    bsf     edx,gs:[ebx+esi+1111h]
+    bsf     ebx,cs:[ebx+esi+11111111h]
+    bsf     ax,[ebp+12345768h]
+    bsf     cx,ds:[5643h]
+    bsf     dx,gs:[bx+si]
+    bsf     bx,fs:[bx+si]
+    bsf     sp,fs:[bx+si+11h]
+    bsf     bp,fs:[bx+si+9876h]
+    bsf     si,fs:[1111h]
+    bsf     di,fs:[bp]
+    bsf     ax,fs:[bx+31h]
+    bsf     cx,es:[bp+98h]
+    bsf     dx,ds:[eax]
+    bsf     bx,ss:[ebp]
+    bsf     sp,gs:[12345768h]
+    bsf     bp,fs:[eax+12345768h]
+    bsf     si,fs:[eax+ebx*8+12345768h]
+    bsf     di,fs:[eax+ebx+12345768h]
+    bsf     ax,fs:[eax+ebx+12h]
+    bsf     cx,fs:[edx+12h]
+    bsf     dx,gs:[eax+ebx*2+44h]
+    bsf     bx,ss:[eax+ebx]
+    
+    bsf     eax,[ebp+12345768h]
+    bsf     ecx,ds:[5643h]
+    bsf     edx,gs:[bx+si]
+    bsf     ebx,fs:[bx+si]
+    bsf     esp,fs:[bx+si+11h]
+    bsf     ebp,fs:[bx+si+9876h]
+    bsf     esi,fs:[1111h]
+    bsf     edi,fs:[bp]
+    bsf     eax,fs:[bx+31h]
+    bsf     ecx,es:[bp+98h]
+    bsf     edx,ds:[eax]
+    bsf     ebx,ss:[ebp]
+    bsf     esp,gs:[12345768h]
+    bsf     ebp,fs:[eax+12345768h]
+    bsf     esi,fs:[eax+ebx*8+12345768h]
+    bsf     edi,fs:[eax+ebx+12345768h]
+    bsf     eax,fs:[eax+ebx+12h]
+    bsf     ecx,fs:[edx+12h]
+    bsf     edx,gs:[eax+ebx*2+44h]
+    bsf     ebx,ss:[eax+ebx]
+    
+    
     end     Start
     
     
