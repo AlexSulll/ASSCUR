@@ -106,10 +106,6 @@ LOCALS @@
     EA_BX_DI        db      'BX + DI$'
     EA_BP_SI        db      'BP + SI$'
     EA_BP_DI        db      'BP + DI$'
-    EA_SI           db      'SI$'
-    EA_DI           db      'DI$'
-    EA_BP           db      'BP$'
-    EA_BX           db      'BX$'
     
     label registers
     BYTE_REGS       dw      REG_AL, REG_CL, REG_DL, REG_BL, REG_AH, REG_CH, REG_DH, REG_BH
@@ -117,7 +113,7 @@ LOCALS @@
     DWORD_REGS      dw      REG_EAX, REG_ECX, REG_EDX, REG_EBX, REG_ESP, REG_EBP, REG_ESI, REG_EDI
     
     label effective_addresses
-    EFF_ADD         dw      EA_BX_SI, EA_BX_DI, EA_BP_SI, EA_BP_DI, EA_SI, EA_DI, EA_BP, EA_BX
+    EFF_ADD         dw      EA_BX_SI, EA_BX_DI, EA_BP_SI, EA_BP_DI, REG_SI, REG_DI, REG_BP, REG_BX
     
     label type_ovr_ptrs
     PTRS            dw      BYTE_PTR, WORD_PTR, DWORD_PTR
@@ -538,7 +534,6 @@ zapis_ss:
     zap     REG_SS,3
     jmp     vihod
 check_disp:
-    int 3
     cmp     al,9Fh
     ja      @@zap_0
     ret
@@ -1161,6 +1156,14 @@ dv_sib_disp8:
     cmp     si,3
     jz      zapis_sib11_disp8
 zapis_sib00_disp8:
+    mov     al,sib
+    push    ax
+    and     ax,000Fh
+    cmp     ax,0Dh
+    jz      no_disp_sib00
+    cmp     ax,05h
+    jz      no_disp_sib00
+    pop     ax
     cmp     sib,24h
     jz      zapis_only_esp_disp8
     call    zapis_base
@@ -1184,7 +1187,27 @@ zapis_only_esp_disp8:
     zap     h,1
     zap     right_par,1
     ret
+no_disp_sib00:
+    pop     ax
+    call    zapis_base
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    pop     si
+    inc     si
+    zap     right_par,1
+    ret
 zapis_sib01_disp8:
+    mov     al,sib
+    push    ax
+    and     ax,000Fh
+    cmp     ax,0Dh
+    jz      no_disp_sib01
+    cmp     ax,05h
+    jz      no_disp_sib01
+    pop     ax
     cmp     sib,64h
     jz      zapis_only_esp_disp8
     call    zapis_base
@@ -1200,7 +1223,27 @@ zapis_sib01_disp8:
     zap     h,1
     zap     right_par,1
     ret
+no_disp_sib01:
+    pop     ax
+    call    zapis_base
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss01_sib[si]
+    mov     cx,5
+    call    zapis
+    pop     si
+    inc     si
+    zap     right_par,1
+    ret
 zapis_sib10_disp8:
+    mov     al,sib
+    push    ax
+    and     ax,000Fh
+    cmp     ax,0Dh
+    jz      no_disp_sib10
+    cmp     ax,05h
+    jz      no_disp_sib10
+    pop     ax
     cmp     sib,0A4h
     jz      zapis_only_esp_disp8
     call    zapis_base
@@ -1216,7 +1259,27 @@ zapis_sib10_disp8:
     zap     h,1
     zap     right_par,1
     ret
+no_disp_sib10:
+    pop     ax
+    call    zapis_base
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss10_sib[si]
+    mov     cx,5
+    call    zapis
+    pop     si
+    inc     si
+    zap     right_par,1
+    ret
 zapis_sib11_disp8:
+    mov     al,sib
+    push    ax
+    and     ax,000Fh
+    cmp     ax,0Dh
+    jz      no_disp_sib11
+    cmp     ax,05h
+    jz      no_disp_sib11
+    pop     ax
     cmp     sib,0E4h
     jz      zapis_only_esp_disp8
     call    zapis_base
@@ -1230,6 +1293,18 @@ zapis_sib11_disp8:
     call    zap_disp_check_0
     add     si,2
     zap     h,1
+    zap     right_par,1
+    ret
+no_disp_sib11:
+    pop     ax
+    call    zapis_base
+    movzx   si,index
+    shl     si,1
+    mov     dx,ss11_sib[si]
+    mov     cx,5
+    call    zapis
+    pop     si
+    inc     si
     zap     right_par,1
     ret
 mem:

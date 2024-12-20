@@ -5,6 +5,7 @@ org     100h
 Start:
     adc     fs:[esp+11h],al
     adc     fs:[ebp],al
+    adc     fs:[ebp+ebp*8],al
     adc     fs:[eax*8],al
     adc     fs:[esp],al
     adc     [ebp+0AFFFFFFFh],ch
