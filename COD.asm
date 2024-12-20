@@ -102,7 +102,6 @@ LOCALS @@
     REG_ESI_8       db      'ESI*8$'
     REG_EDI_8       db      'EDI*8$'
     
-    
     EA_BX_SI        db      'BX + SI$'
     EA_BX_DI        db      'BX + DI$'
     EA_BP_SI        db      'BP + SI$'
@@ -202,8 +201,6 @@ Start:
 zapis:
     mov     ah,40h
     mov     bx,id_file
-    int     21h     
-    mov     ah,09h
     int     21h
     ret
 zapis_disp32:
@@ -223,19 +220,19 @@ zapis_disp16:
 zap_disp:
     lodsb
     or      al,al
-    jz      @@skip
+    jz      skip
     call    razdelenie
     mov     disp,ax
     zap     disp,2
     sub     si,2
     ret
-@@skip:
+skip:
     sub     si,2
     ret
 zap_disp_check_0:
     lodsb
     or      al,al
-    jz      @@skip
+    jz      skip
     push    ax
     call    check_disp
     pop     ax
@@ -244,8 +241,13 @@ zap_disp_check_0:
     zap     disp,2
     sub     si,2
     ret
-@@skip:
-    sub     si,2
+zapis_base:
+    movzx   si,base
+    shl     si,1
+    mov     dx,ss00_sib[si]
+    mov     cx,3
+    call    zapis
+    zap     plus,3
     ret
 reset_values:
     mov     reg_e,0
@@ -536,11 +538,19 @@ zapis_ss:
     zap     REG_SS,3
     jmp     vihod
 check_disp:
+    int 3
     cmp     al,9Fh
     ja      @@zap_0
     ret
 @@zap_0:
     zap     zeroo,1
+    ret
+zapis_breg:
+    movzx   si,rm
+    shl     si,1
+    mov     dx,registers[si]
+    mov     cx,2
+    call    zapis
     ret
 check_len:
     cmp     rm,3
@@ -646,11 +656,7 @@ opc10:
     jmp     prefix_oper
 regbregb:
     push    si
-    movzx   si,rm
-    shl     si,1
-    mov     dx,registers[si]
-    mov     cx,2
-    call    zapis
+    call    zapis_breg
     zap     reg1,1
     call    zapis_reg
     pop     si
@@ -713,11 +719,7 @@ opc12:
 regbregbopc12:
     push    si
     call    zapis_reg
-    movzx   si,rm
-    shl     si,1
-    mov     dx,registers[si]
-    mov     cx,2
-    call    zapis
+    call    zapis_breg
     zap     enterr,2
     pop     si
     call    reset_values
@@ -997,12 +999,7 @@ dv_sib_disp32:
     cmp     si,3
     jz      @@zapis_sib11_disp32
 @@zapis_sib00_disp32:
-    movzx   si,base
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss00_sib[si]
@@ -1015,12 +1012,7 @@ dv_sib_disp32:
     zap     right_par,1
     ret
 @@zapis_sib01_disp32:
-    movzx   si,base
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss01_sib[si]
@@ -1033,12 +1025,7 @@ dv_sib_disp32:
     zap     right_par,1
     ret
 @@zapis_sib10_disp32:
-    movzx   si,base
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss10_sib[si]
@@ -1051,12 +1038,7 @@ dv_sib_disp32:
     zap     right_par,1
     ret
 @@zapis_sib11_disp32:
-    movzx   si,base
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss11_sib[si]
@@ -1179,14 +1161,9 @@ dv_sib_disp8:
     cmp     si,3
     jz      zapis_sib11_disp8
 zapis_sib00_disp8:
-    movzx   si,base
     cmp     sib,24h
     jz      zapis_only_esp_disp8
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss00_sib[si]
@@ -1200,11 +1177,7 @@ zapis_sib00_disp8:
     zap     right_par,1
     ret
 zapis_only_esp_disp8:
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     pop     si
     call    zap_disp_check_0
     add     si,2
@@ -1212,14 +1185,9 @@ zapis_only_esp_disp8:
     zap     right_par,1
     ret
 zapis_sib01_disp8:
-    movzx   si,base
     cmp     sib,64h
     jz      zapis_only_esp_disp8
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss01_sib[si]
@@ -1233,14 +1201,9 @@ zapis_sib01_disp8:
     zap     right_par,1
     ret
 zapis_sib10_disp8:
-    movzx   si,base
     cmp     sib,0A4h
     jz      zapis_only_esp_disp8
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss10_sib[si]
@@ -1254,14 +1217,9 @@ zapis_sib10_disp8:
     zap     right_par,1
     ret
 zapis_sib11_disp8:
-    movzx   si,base
     cmp     sib,0E4h
     jz      zapis_only_esp_disp8
-    shl     si,1
-    mov     dx,ss00_sib[si]
-    mov     cx,3
-    call    zapis
-    zap     plus,3
+    call    zapis_base
     movzx   si,index
     shl     si,1
     mov     dx,ss11_sib[si]
